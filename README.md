@@ -1,0 +1,2 @@
+# Particle-Collision-Project
+Me and another person are currently doing our bachelor thesis on particle collision. In this project we will be comparing two methods, octree collision based particle system and screen space particle collision. The goal of the project is to find out which method is more suited for a real-time application, we expect screen space particle collision to have better performance but less collision accuracy.
