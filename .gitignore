@@ -36,3 +36,7 @@
 *.user
 *.suo
 *.sln.docstates
+
+# Executeable folder
+*x64
+*Win32
