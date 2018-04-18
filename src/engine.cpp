@@ -75,7 +75,7 @@ void Engine::_init() {
 }
 
 void Engine::_initializeSDL() {
-	_screen = std::make_unique<Window>("Rolling Bogdans, two fast four you!");
+	_screen = std::make_unique<Window>("Particle Collision Test");
 }
 
 void Engine::_initializeGL() {
