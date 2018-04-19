@@ -1,8 +1,13 @@
 #include "meshloader.hpp"
 #include <vector>
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 
 MeshLoader::MeshLoader() {
-	
+	const aiScene* asd = aiImportFile("bb8.FBX", aiProcessPreset_TargetRealtime_MaxQuality);
+	printf("%d", asd->mNumMeshes);
 }
 
 MeshLoader::~MeshLoader() {
