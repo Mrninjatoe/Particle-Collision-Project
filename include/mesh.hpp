@@ -38,4 +38,5 @@ private:
 
 struct Model {
 	std::vector<Mesh> meshes;
+	glm::mat4 model;
 };

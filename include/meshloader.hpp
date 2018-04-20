@@ -8,7 +8,7 @@ public:
 	MeshLoader();
 	~MeshLoader();
 	//Mesh& loadMesh(const std::string& path);
-	std::vector<Mesh> loadMesh(const char* path);
+	Model loadMesh(const char* path);
 	Mesh* getQuad();
 private:
 

@@ -57,7 +57,7 @@ int Engine::run() {
 			// Bind FBO for gBuffers
 			//_renderer->render(_screen.get(), _geometryPass);
 			_deferredFBO->bind();
-			_renderer->render(_screen.get(), _meshes, _geometryPass);
+			_renderer->render(_screen.get(), _models, _geometryPass);
 		}
 
 		{ // Lighting pass to reconstruct scene.
@@ -117,5 +117,5 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_meshes = _meshLoader->loadMesh("assets/models/box.fbx");
+	_models.push_back(_meshLoader->loadMesh("assets/models/box.fbx"));
 }
