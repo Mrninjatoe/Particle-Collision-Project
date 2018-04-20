@@ -18,5 +18,7 @@ void main(){
 	vec4 color = texture(albedo, vUV.xy);
 	float d = texture(depth, vUV.xy).r;
 
-	fragColor = color * d;
+	fragColor = color;
+	//fragColor = vec4(pos, 0);
+	//fragColor = vec4(1,0,0,0);
 }

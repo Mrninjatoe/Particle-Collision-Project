@@ -34,6 +34,8 @@ private:
 	std::unique_ptr<TextureLoader> _textureLoader;
 	std::shared_ptr<Texture> _testTexture;
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
+	std::vector<Mesh*> _meshes;
+	Mesh* _testMesh;
 	ShaderProgram* _geometryPass;
 	ShaderProgram* _lightingPass;
 

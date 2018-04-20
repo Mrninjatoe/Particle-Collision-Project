@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include "engine.hpp"
+#include <glm/gtx/transform.hpp>
 
 Engine* Engine::_instance;
 
@@ -46,15 +47,17 @@ int Engine::run() {
 				break;
 			}
 		}
-
+		glm::mat4 bog = glm::translate(glm::vec3(0,0, 0)) * glm::scale(glm::vec3(0.25));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
+			_geometryPass->setValue(0, bog);
 			_geometryPass->setValue(22, 0);
 			_testTexture->bind(0);
 			// Bind FBO for gBuffers
+			//_renderer->render(_screen.get(), _geometryPass);
 			_deferredFBO->bind();
-			_renderer->render(_screen.get(), _geometryPass);
+			_renderer->render(_screen.get(), _meshes, _geometryPass);
 		}
 
 		{ // Lighting pass to reconstruct scene.
@@ -114,4 +117,5 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
+	_meshes = _meshLoader->loadMesh("assets/models/box.fbx");
 }

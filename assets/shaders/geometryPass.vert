@@ -13,9 +13,11 @@ out vec2 vUV;
 //layout (location = 0) uniform mat4 p;
 //layout (location = 1) uniform mat4 v;
 //layout (location = 2) uniform mat4 m;
+layout(location = 0) uniform mat4 m;
+layout(location = 1) uniform float dex;
 
 void main(){
-	vPos = pos * vec3(0.5,1,gl_VertexID) * 0.5;
+	vPos = vec3(m * vec4(pos, 1)).xyz;
 	vNormal = normal;
 	vColor = color;
 	vUV = uv;
