@@ -45,6 +45,9 @@
     <ClCompile Include="src\GLGraphics\gltexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\GLGraphics\glframebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\engine.hpp">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\GLGraphics\gltexture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GLGraphics\glframebuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

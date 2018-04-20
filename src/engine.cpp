@@ -47,13 +47,31 @@ int Engine::run() {
 			}
 		}
 
-		//_geometryPass->useProgram();
-		//_geometryPass->setValue(22, 0);
-		//_testTexture->bind(22);
-		//_geometryPass->setValue(0, _camera->getComponent<CameraComponent>().getProjectionMatrix());
-		//_geometryPass->setValue(1, _camera->getComponent<CameraComponent>().getViewMatrix());
-		//_geometryPass->setValue(2, glm::mat4(1));
-		//_renderer->render(_screen.get(), _geometryPass);
+		{ // Geometry pass for information.
+			_geometryPass->useProgram();
+			// Texture.
+			_geometryPass->setValue(22, 0);
+			_testTexture->bind(0);
+			// Bind FBO for gBuffers
+			_deferredFBO->bind();
+			_renderer->render(_screen.get(), _geometryPass);
+		}
+
+		{ // Lighting pass to reconstruct scene.
+			_lightingPass->useProgram();
+			_lightingPass->setValue(20, 0);
+			_lightingPass->setValue(21, 1);
+			_lightingPass->setValue(22, 2);
+			_lightingPass->setValue(23, 3);
+			(*_deferredFBO)[0]->bind(0);
+			(*_deferredFBO)[1]->bind(1);
+			(*_deferredFBO)[2]->bind(2);
+			_deferredFBO->bindDepth(3);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_renderer->render(_screen.get(), _lightingPass);
+		}
+		
 	}
 
 	return 0;
@@ -71,6 +89,11 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/geometryPass.frag")
 		.finalize();
 
+	_lightingPass = new ShaderProgram("Lighting Pass");
+	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
+		.finalize();
+
 	_initWorld();
 }
 
@@ -83,5 +106,12 @@ void Engine::_initializeGL() {
 }
 
 void Engine::_initWorld() {
-	//_testTexture = _textureLoader->loadTexture("assets/textures/wawa.png");
+	_testTexture = _textureLoader->loadTexture("assets/textures/sleeping_pupper.png");
+	_deferredFBO = std::make_shared<GLFrameBuffer>();
+	_deferredFBO->bind()
+		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
+		.addTexture(1, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
+		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
+		.addDepth(3, _screen->getWidth(), _screen->getHeight())
+		.finalize();
 }

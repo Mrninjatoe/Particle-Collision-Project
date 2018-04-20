@@ -4,6 +4,7 @@
 #include "meshloader.hpp"
 #include "textureloader.hpp"
 #include "shaderprogram.hpp"
+#include "GLGraphics/glframebuffer.hpp"
 
 class Engine {
 public:
@@ -31,7 +32,10 @@ private:
 	std::unique_ptr<Window> _screen;
 	std::unique_ptr<MeshLoader> _meshLoader;
 	std::unique_ptr<TextureLoader> _textureLoader;
+	std::shared_ptr<Texture> _testTexture;
+	std::shared_ptr<GLFrameBuffer> _deferredFBO;
 	ShaderProgram* _geometryPass;
+	ShaderProgram* _lightingPass;
 
 	void _init();
 	void _initializeSDL();

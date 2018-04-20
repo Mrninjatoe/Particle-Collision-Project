@@ -99,7 +99,7 @@ public:
 		return translate[format];
 	}
 
-	Texture(const TextureFormat& format, glm::vec2 size);
+	Texture(const TextureFormat format, glm::vec2 size);
 	Texture(const std::string& path);
 	~Texture();
 
@@ -112,6 +112,8 @@ public:
 		glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + pos));
 		glBindTexture(GL_TEXTURE_2D, _texture);
 	}
+
+	unsigned int getLocation() { return _texture; }
 
 private:
 	GLuint _texture;

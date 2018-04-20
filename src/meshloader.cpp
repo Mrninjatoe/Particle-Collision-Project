@@ -6,11 +6,12 @@
 
 
 MeshLoader::MeshLoader() {
+
 	
 }
 
 MeshLoader::~MeshLoader() {
-	
+
 }
 
 //Mesh& MeshLoader::loadMesh(const std::string& path) {
