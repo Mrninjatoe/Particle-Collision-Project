@@ -1,12 +1,10 @@
 #include "GLGraphics/gltexture.hpp"
 // Private functions are in the header.
 
-Texture::Texture(const TextureFormat& format, glm::vec2 size) {
-	glCreateTextures(GL_TEXTURE_2D, 1, &_texture);
-	glTextureStorage2D(_texture, 1, static_cast<GLenum>(format), size.x, size.y);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+Texture::Texture(const TextureFormat format, glm::vec2 size) {
 	_format = format;
 	_size = size;
+	_setData(nullptr);
 }
 
 Texture::Texture(const std::string& path) {

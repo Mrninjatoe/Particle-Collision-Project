@@ -37,20 +37,23 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 
 	SDL_GL_SetSwapInterval(1);
 
-	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
 	glDisable(GL_CULL_FACE);
+
 	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
 }
 
 GLRenderer::~GLRenderer() {
-	
+	SDL_GL_DeleteContext(_context);
 }
 
 void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	// Refactor render data into a class so it acts like a renderpass with clear color, color/depth buffer bit etc... 
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0, 0, 0, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(_fullscreenQuad->getVAO());
 	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 	//glDrawElementsInstanced(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_INT, NULL, 1);

@@ -6,12 +6,12 @@
 
 
 MeshLoader::MeshLoader() {
-	const aiScene* asd = aiImportFile("bb8.FBX", aiProcessPreset_TargetRealtime_MaxQuality);
-	printf("%d", asd->mNumMeshes);
+	const aiScene* asd = aiImportFile("assets/models/bb8.FBX", aiProcessPreset_TargetRealtime_MaxQuality);
+	printf("%d\n", asd->mNumMeshes);
 }
 
 MeshLoader::~MeshLoader() {
-	
+
 }
 
 //Mesh& MeshLoader::loadMesh(const std::string& path) {

@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="src\engine.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\GLGraphics\glframebuffer.cpp" />
     <ClCompile Include="src\GLGraphics\glrenderer.cpp" />
     <ClCompile Include="src\GLGraphics\gltexture.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -152,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\engine.hpp" />
+    <ClInclude Include="include\GLGraphics\glframebuffer.hpp" />
     <ClInclude Include="include\GLGraphics\glrenderer.hpp" />
     <ClInclude Include="include\GLGraphics\gltexture.hpp" />
     <ClInclude Include="include\mesh.hpp" />
