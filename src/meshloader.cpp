@@ -18,13 +18,15 @@ MeshLoader::~MeshLoader() {
 //
 //}
 
-std::vector<Mesh*>& MeshLoader::loadMesh(const char* path) {
+std::vector<Mesh> MeshLoader::loadMesh(const char* path) {
 	const aiScene* test = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
 	//aiMesh* mesh = test->mMeshes[1];
 	//printf("%d", mesh);
 
 	aiMesh* mesh;
-	std::vector<Mesh*> meshes;
+	std::vector<Mesh> meshes;
+	std::vector <Mesh::Vertex> vertices;
+	std::vector<unsigned short> indices;
 	for (int i = 0; i < test->mNumMeshes; i++) {
 		std::vector <Mesh::Vertex> vertices;
 		std::vector<unsigned short> indices;
@@ -55,7 +57,7 @@ std::vector<Mesh*>& MeshLoader::loadMesh(const char* path) {
 				indices.push_back(face.mIndices[k]);
 			}
 		}
-		meshes.push_back(new Mesh(vertices, indices));
+		meshes.push_back(Mesh(vertices, indices));
 	}
 	return meshes;
 }

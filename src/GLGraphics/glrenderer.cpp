@@ -59,7 +59,7 @@ void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	//glDrawElementsInstanced(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_INT, NULL, 1);
 }
 
-void GLRenderer::render(Window * window, std::vector<Mesh*> meshes, ShaderProgram* shader){
+void GLRenderer::render(Window * window, std::vector<Mesh>& meshes, ShaderProgram* shader){
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0, 0, 0, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -68,12 +68,12 @@ void GLRenderer::render(Window * window, std::vector<Mesh*> meshes, ShaderProgra
 	//glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 	float i = -0.3;
 	for (auto mesh : meshes) {
-		printf("%zu\n", mesh->getVertices().size());
+		printf("%zu\n", mesh.getVertices().size());
 		shader->setValue(1, i);
 		//glBindVertexArray(_fullscreenQuad->getVAO());
 		//glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-		glBindVertexArray(mesh->getVAO());
-		glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+		glBindVertexArray(mesh.getVAO());
+		glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 		i += 0.1;
 	}
 	printf("done rendering!\n");

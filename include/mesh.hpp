@@ -35,3 +35,7 @@ private:
 	void _setupBuffers();
 	void _setupAttributes();
 };
+
+struct Model {
+	std::vector<Mesh> meshes;
+};

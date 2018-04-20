@@ -11,7 +11,7 @@ public:
 	GLRenderer(SDL_Window* window);
 	~GLRenderer();
 	void render(Window* window, ShaderProgram* shader);
-	void render(Window* window, std::vector<Mesh*> meshes, ShaderProgram* shader);
+	void render(Window* window, std::vector<Mesh>& meshes, ShaderProgram* shader);
 	static void APIENTRY openglCallbackFunction(
 		GLenum source,
 		GLenum type,
