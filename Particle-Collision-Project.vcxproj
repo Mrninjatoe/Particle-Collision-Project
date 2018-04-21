@@ -139,6 +139,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\engine.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\GLGraphics\glframebuffer.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\engine.hpp" />
     <ClInclude Include="include\GLGraphics\glframebuffer.hpp" />
     <ClInclude Include="include\GLGraphics\glrenderer.hpp" />

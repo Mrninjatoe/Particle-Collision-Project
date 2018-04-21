@@ -5,7 +5,7 @@
 #include "textureloader.hpp"
 #include "shaderprogram.hpp"
 #include "GLGraphics/glframebuffer.hpp"
-
+#include "camera.hpp"
 class Engine {
 public:
 	Engine();
@@ -34,6 +34,7 @@ private:
 	std::unique_ptr<TextureLoader> _textureLoader;
 	std::shared_ptr<Texture> _testTexture;
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
+	Camera _camera;
 	std::vector<Model> _models;
 	ShaderProgram* _geometryPass;
 	ShaderProgram* _lightingPass;

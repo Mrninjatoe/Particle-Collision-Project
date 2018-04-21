@@ -66,17 +66,10 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	
 	//glBindVertexArray(_fullscreenQuad->getVAO());
 	//glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-	float i = -0.3;
 	for (auto model : models) {
 		for (auto mesh : model.meshes) {
-			printf("%zu\n", mesh.getVertices().size());
-			shader->setValue(1, i);
-			glBindVertexArray(_fullscreenQuad->getVAO());
-			glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-			//glBindVertexArray(mesh.getVAO());
-			//glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-			i += 0.1;
+			glBindVertexArray(mesh.getVAO());
+			glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 		}
 	}
-	printf("done rendering!\n");
 }

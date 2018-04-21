@@ -42,16 +42,22 @@ int Engine::run() {
 			switch (event.button.button) {
 			case SDL_BUTTON_RIGHT:
 				printf("Lmao\n");
+				_camera.enableFreeCamera();
 				break;
 			default:
 				break;
 			}
 		}
-		glm::mat4 bog = glm::translate(glm::vec3(0,0, 0)) * glm::scale(glm::vec3(0.25));
+
+		_camera.update();
+
+		glm::mat4 bog = glm::translate(glm::vec3(0,0,0)) * glm::scale(glm::vec3(0.2));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
 			_geometryPass->setValue(0, bog);
+			_geometryPass->setValue(1, _camera.getViewMatrix());
+			_geometryPass->setValue(2, _camera.getProjectionMatrix());
 			_geometryPass->setValue(22, 0);
 			_testTexture->bind(0);
 			// Bind FBO for gBuffers
@@ -66,6 +72,8 @@ int Engine::run() {
 			_lightingPass->setValue(21, 1);
 			_lightingPass->setValue(22, 2);
 			_lightingPass->setValue(23, 3);
+			_lightingPass->setValue(18, _camera.zNear);
+			_lightingPass->setValue(19, _camera.zFar);
 			(*_deferredFBO)[0]->bind(0);
 			(*_deferredFBO)[1]->bind(1);
 			(*_deferredFBO)[2]->bind(2);
@@ -117,5 +125,7 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_models.push_back(_meshLoader->loadMesh("assets/models/box.fbx"));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx"));
+	_camera = Camera();
+	_camera.cameraPos = glm::vec3(0, 0, 1);
 }

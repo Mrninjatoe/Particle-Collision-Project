@@ -1,9 +1,5 @@
 #include "meshloader.hpp"
 #include <vector>
-#include <assimp/cimport.h>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 
 MeshLoader::MeshLoader() {
 
@@ -18,47 +14,58 @@ MeshLoader::~MeshLoader() {
 //
 //}
 
-Model MeshLoader::loadMesh(const char* path) {
-	const aiScene* test = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
-	//aiMesh* mesh = test->mMeshes[1];
-	//printf("%d", mesh);
-
-	aiMesh* mesh;
-	Model model;
-	std::vector <Mesh::Vertex> vertices;
+Mesh MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
+	std::vector<Mesh::Vertex> vertices;
 	std::vector<unsigned short> indices;
-	for (int i = 0; i < test->mNumMeshes; i++) {
-		std::vector <Mesh::Vertex> vertices;
-		std::vector<unsigned short> indices;
-		mesh = test->mMeshes[i];
-		for (int j = 0; j < mesh->mNumVertices; j++) {
-			Mesh::Vertex vertex;
-			glm::vec3 tmpVec;
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+		Mesh::Vertex vertex;
+		glm::vec3 tempV;
 
-			tmpVec.x = mesh->mVertices[i].x;
-			tmpVec.y = mesh->mVertices[i].y;
-			tmpVec.z = mesh->mVertices[i].z;
-			vertex.pos = tmpVec;
+		tempV.x = mesh->mVertices[i].x;
+		tempV.y = mesh->mVertices[i].y;
+		tempV.z = mesh->mVertices[i].z;
+		vertex.pos = tempV;
 
-			tmpVec.x = mesh->mNormals[i].x;
-			tmpVec.y = mesh->mNormals[i].y;
-			tmpVec.z = mesh->mNormals[i].z;
-			vertex.normal = tmpVec;
+		tempV.x = mesh->mNormals[i].x;
+		tempV.y = mesh->mNormals[i].y;
+		tempV.z = mesh->mNormals[i].z;
+		vertex.normal = tempV;
+		// cool colors :)
+		vertex.color = glm::vec3(static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 
+			static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
+			static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
-
-
-
-			vertices.push_back(vertex);
-		}
-
-		for (int j = 0; j < mesh->mNumFaces; j++) {
-			aiFace face = mesh->mFaces[j];
-			for (int k = 0; k < face.mNumIndices; k++) {
-				indices.push_back(face.mIndices[k]);
-			}
-		}
-		model.meshes.push_back(Mesh(vertices, indices));
+		vertices.push_back(vertex);
 	}
+
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+		aiFace face = mesh->mFaces[i];
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+			indices.push_back(face.mIndices[j]);
+	}
+	return Mesh(vertices, indices);
+}
+
+void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
+	for (unsigned int i = 0; i < node->mNumMeshes;i++) {
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		models.meshes.push_back(processMesh(mesh, scene));
+	}
+
+	for (unsigned int i = 0; i < node->mNumChildren; i++) {
+		processNode(node->mChildren[i], scene, models);
+	}
+}
+
+Model MeshLoader::loadMesh(const char* path) {
+	const aiScene* test = aiImportFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+
+	if (!test || test->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !test->mRootNode)
+		printf("ERROR::ASSIMP::", aiGetErrorString());
+
+	Model model;
+	processNode(test->mRootNode, test, model);
+
 	return model;
 }
 

@@ -7,6 +7,9 @@ in vec2 vUV;
 
 out vec4 fragColor;
 
+
+layout(location = 18) uniform float zNear;
+layout(location = 19) uniform float zFar;
 layout(location = 20) uniform sampler2D positions;
 layout(location = 21) uniform sampler2D normals;
 layout(location = 22) uniform sampler2D albedo;
@@ -16,9 +19,11 @@ void main(){
 	vec3 pos = texture(positions, vUV.xy).xyz;
 	vec3 normal = texture(normals, vUV.xy).xyz;
 	vec4 color = texture(albedo, vUV.xy);
-	float d = texture(depth, vUV.xy).r;
+	float z_b = texture(depth, vUV.xy).x;
+	float z_n = 2.0 * z_b - 1.0;
+    float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
 
-	fragColor = color;
-	//fragColor = vec4(pos, 0);
+	fragColor = vec4(normal,1);
+	//fragColor = color;
 	//fragColor = vec4(1,0,0,0);
 }
