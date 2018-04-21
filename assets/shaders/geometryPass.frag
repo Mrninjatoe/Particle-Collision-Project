@@ -14,6 +14,6 @@ layout (location = 22) uniform sampler2D modelTexture;
 void main(){
 	gPosition = vPos;
 	gNormal = vNormal;
-	//gAlbedoSpec = texture(modelTexture, vUV);
-	gAlbedoSpec = vec4(vColor, 0);
+	gAlbedoSpec = texture(modelTexture, vUV);
+	//gAlbedoSpec = vec4(vColor, 0);
 }

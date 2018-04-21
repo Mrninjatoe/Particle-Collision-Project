@@ -29,11 +29,21 @@ Mesh MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		tempV.x = mesh->mNormals[i].x;
 		tempV.y = mesh->mNormals[i].y;
 		tempV.z = mesh->mNormals[i].z;
+
 		vertex.normal = tempV;
 		// cool colors :)
 		vertex.color = glm::vec3(static_cast <float> (rand()) / static_cast <float> (RAND_MAX), 
 			static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
 			static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+
+		if (mesh->mTextureCoords[0]) {
+			glm::vec2 vec;
+			vec.x = mesh->mTextureCoords[0][i].x;
+			vec.y = mesh->mTextureCoords[0][i].y;
+			vertex.uv = vec;
+		}
+		else
+			vertex.uv = glm::vec2(0.f);
 
 		vertices.push_back(vertex);
 	}
@@ -58,7 +68,7 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) 
 }
 
 Model MeshLoader::loadMesh(const char* path) {
-	const aiScene* test = aiImportFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+	const aiScene* test = aiImportFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!test || test->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !test->mRootNode)
 		printf("ERROR::ASSIMP::", aiGetErrorString());

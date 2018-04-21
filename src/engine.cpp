@@ -51,7 +51,7 @@ int Engine::run() {
 
 		_camera.update();
 
-		glm::mat4 bog = glm::translate(glm::vec3(0,0,0)) * glm::scale(glm::vec3(0.2));
+		glm::mat4 bog = glm::translate(glm::vec3(0,0,0)) * glm::scale(glm::vec3(0.001));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
