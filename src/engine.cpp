@@ -36,28 +36,70 @@ int Engine::run() {
 			case SDLK_ESCAPE:
 				quit = true;
 				break;
+			case SDLK_LSHIFT:
+				_camera.pressedShift = true;
+				break;
+			case SDLK_SPACE:
+				_camera.moveUp = true;
+				break;
+			case SDLK_w:
+				_camera.moveForward = true;
+				break;
+			case SDLK_a:
+				_camera.moveLeft = true;
+				break;
+			case SDLK_s:
+				_camera.moveBack = true;
+				break;
+			case SDLK_d:
+				_camera.moveRight = true;
+				break;
 			default:
 				break;
 			}
 			switch (event.button.button) {
 			case SDL_BUTTON_RIGHT:
-				printf("Lmao\n");
-				_camera.enableFreeCamera();
 				break;
 			default:
 				break;
 			}
+			switch (event.type) {
+			case SDL_KEYUP:
+				if (event.key.keysym.sym == SDLK_LSHIFT) {
+					_camera.pressedShift = false;
+				}
+				if (event.key.keysym.sym == SDLK_SPACE) {
+					_camera.moveUp = false;
+				}
+				if (event.key.keysym.sym == SDLK_LCTRL) {
+					_camera.moveDown = false;
+				}
+				if (event.key.keysym.sym == SDLK_w) {
+					_camera.moveForward = false;
+				}
+				if (event.key.keysym.sym == SDLK_a) {
+					_camera.moveLeft = false;
+				}
+				if (event.key.keysym.sym == SDLK_s) {
+					_camera.moveBack = false;
+				}
+				if (event.key.keysym.sym == SDLK_d) {
+					_camera.moveRight = false;
+				}
+				break;
+			default:
+				break;
 		}
+	}
 
-		_camera.update();
+		_camera.update(deltaTime);
 
-		glm::mat4 bog = glm::translate(glm::vec3(0,0,0)) * glm::scale(glm::vec3(0.001));
+		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
 			_geometryPass->setValue(0, bog);
-			_geometryPass->setValue(1, _camera.getViewMatrix());
-			_geometryPass->setValue(2, _camera.getProjectionMatrix());
+			_geometryPass->setValue(1, _camera.getViewProj());
 			_geometryPass->setValue(22, 0);
 			_testTexture->bind(0);
 			// Bind FBO for gBuffers
@@ -127,5 +169,5 @@ void Engine::_initWorld() {
 		.finalize();
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx"));
 	_camera = Camera();
-	_camera.cameraPos = glm::vec3(0, 0, 1);
+	_camera.position = glm::vec3(0, 0, -10);
 }

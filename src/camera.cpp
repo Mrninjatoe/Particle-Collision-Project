@@ -1,66 +1,68 @@
 #include "camera.hpp"
-#include "SDL2\SDL.h"
+#include "window.hpp"
 #include "engine.hpp"
-#include <algorithm>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
-Camera::Camera() {
-	fov = 70.f;
-	zNear = 0.1;
-	zFar = 100.f;
-	aspect = 4.f / 3.f;
-	sensitivity = 0.006f;
-	pitch = 0.f;
-	yaw = 0.f;
-	cameraOrientation = glm::quat();
+void Camera::update(float dt) {
+	// DEBUG FPS CAMERA
+	glm::ivec2 dm = mousePos;
+	SDL_GetMouseState(&mousePos.x, &mousePos.y);
+	if (dm != mousePos) {
+		auto sizes = Engine::getInstance()->getWindow()->getSizes();
+		mousePos -= sizes / 2;
 
-	cameraTarget = glm::vec3(0);
-	cameraRight = glm::vec3(1, 0, 0);
-	cameraUp = glm::vec3(0, 1, 0);
-	cameraDirection = glm::vec3(0, 0, -1);
-	cameraPos = glm::vec3(0);
-	mousePos = glm::ivec2(0, 0);
-
-	//cameraDirection = glm::normalize(_getPlayerPos() - cameraTarget);
-	//SDL_SetRelativeMouseMode(SDL_TRUE);
-	freeCamera = false;
-	SDL_ShowCursor(!freeCamera);
-}
-
-Camera::~Camera() {
-	
-}
-
-void Camera::update() {
-	if (freeCamera) {
-		glm::ivec2 newMousePos;
-		SDL_GetMouseState(&newMousePos.x, &newMousePos.y);
-		_updateMouseMovement(newMousePos);
+		pitch += dm.y * 0.001f;
+		yaw -= dm.x * 0.001f;
+		float hpi = glm::half_pi<float>() - 0.001;
+		pitch = glm::clamp(pitch, -hpi, hpi);
+		SDL_WarpMouseInWindow(Engine::getInstance()->getWindow()->getView(), sizes.x / 2, sizes.y / 2);
 	}
-	_updateView();
+	float speed = 350.f;
+	if (pressedShift)
+		speed *= 10;
+
+	glm::vec3 walk_dir;
+	if (moveForward)
+		walk_dir += glm::vec3(0, 0, 1);
+
+	if (moveBack)
+		walk_dir += glm::vec3(0, 0, -1);
+
+	if (moveLeft)
+		walk_dir += glm::vec3(1, 0, 0);
+
+	if (moveRight)
+		walk_dir += glm::vec3(-1, 0, 0);
+
+	orientation = glm::quat(glm::vec3(0, yaw, 0)) * glm::quat(glm::vec3(pitch, 0, 0));
+
+	walk_dir = orientation * walk_dir;
+
+	position += walk_dir * dt * speed * 0.001f;
+	if (moveUp)
+		position.y += speed * dt;
+
+	if (moveDown)
+		position.y -= speed * dt;
 }
 
-void Camera::_updateMouseMovement(glm::ivec2& newMousePos) {
-	auto window = Engine::getInstance()->getWindow();
-	glm::ivec2 sizes = window->getSizes();
-	mousePos = newMousePos;
-	newMousePos -= sizes / 2;
+glm::mat4 Camera::getViewProj() {
+	auto size = Engine::getInstance()->getWindow()->getSizes();
+	float aspect = size.x / size.y;
 
-	yaw = yaw + sensitivity * newMousePos.x;
-	pitch = pitch + sensitivity * newMousePos.y;
+	glm::mat4 proj = glm::perspective(glm::radians(70.f), aspect, zNear, zFar);
+	glm::mat4 view = glm::inverse(glm::translate(position) * glm::mat4_cast(glm::rotate(orientation, glm::pi<float>(), glm::vec3(0, 1, 0))));
 
-	SDL_WarpMouseInWindow(window->getView(), sizes.x / 2, sizes.y / 2);
-}
-
-void Camera::_updateView() {
-	glm::quat qPitch = glm::angleAxis(pitch, glm::vec3(1, 0, 0));
-	glm::quat qYaw = glm::angleAxis(yaw, glm::vec3(0, 1, 0));
-	cameraOrientation = glm::normalize(qPitch * qYaw);
-
-	view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.f), -cameraPos);
-}
+	// for isometric
+	//proj = glm::ortho(-500.f*aspect, 500.f*aspect, -500.f, 500.f, 0.f, 2000.f);
+	//view = glm::lookAt(position - 2000.f*normalize(glm::vec3(1, -1, 1)), position, glm::vec3(0, 1, 0));
 
 
-void Camera::enableFreeCamera() {
-	freeCamera = !freeCamera;
-	SDL_ShowCursor(!freeCamera);
+	// for top-down
+	//float hsize = 10000;
+	//proj = glm::ortho(-hsize, hsize, -hsize/aspect, hsize / aspect, 0.f, 3000.f);
+	//view = glm::lookAt(position - 2000.f*normalize(glm::vec3(0, -1, 0)), position, glm::vec3(0, 0, 1));
+
+	return proj * view;
 }

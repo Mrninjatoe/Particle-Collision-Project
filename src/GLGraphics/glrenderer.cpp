@@ -66,10 +66,12 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	
 	//glBindVertexArray(_fullscreenQuad->getVAO());
 	//glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+	int offset = -3;
 	for (auto model : models) {
 		for (auto mesh : model.meshes) {
 			glBindVertexArray(mesh.getVAO());
 			glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 		}
+		offset += 3;
 	}
 }

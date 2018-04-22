@@ -30,6 +30,8 @@ Window::Window(const std::string& caption) {
 		printf("SDL failed to create window!\n");
 	else
 		printf("SDL successfully created a window!\n");
+
+	SDL_ShowCursor(0);
 }
 
 Window::~Window() {

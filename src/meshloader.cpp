@@ -69,7 +69,7 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) 
 
 Model MeshLoader::loadMesh(const char* path) {
 	// For models without normals we need aiProcess_GenNormals. Should always have them with .fbx though.
-	const aiScene* test = aiImportFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* test = aiImportFile(path, aiProcess_PreTransformVertices | aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!test || test->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !test->mRootNode)
 		printf("ERROR::ASSIMP::", aiGetErrorString());
