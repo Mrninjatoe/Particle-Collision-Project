@@ -24,6 +24,6 @@ void main(){
     float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
 
 	//fragColor = vec4(normal,1);
-	fragColor = color;
+	fragColor = color * z_e;
 	//fragColor = vec4(1) * z_e;
 }

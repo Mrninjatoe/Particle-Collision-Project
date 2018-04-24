@@ -167,7 +167,7 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx"));
+	_models.push_back(_meshLoader->loadMesh("assets/models/default_scene.fbx"));
 	_camera = Camera();
 	_camera.position = glm::vec3(0, 0, -10);
 }
