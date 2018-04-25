@@ -6,6 +6,7 @@
 #include "shaderprogram.hpp"
 #include "GLGraphics/glframebuffer.hpp"
 #include "camera.hpp"
+#include "particlesystem.hpp"
 class Engine {
 public:
 	Engine();
@@ -36,8 +37,11 @@ private:
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
 	Camera _camera;
 	std::vector<Model> _models;
+	ParticleSystem* _particleSystem;
 	ShaderProgram* _geometryPass;
 	ShaderProgram* _lightingPass;
+	ShaderProgram* _particlePass;
+	ShaderProgram* _computeShader;
 
 	void _init();
 	void _initializeSDL();

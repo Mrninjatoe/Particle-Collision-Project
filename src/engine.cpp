@@ -26,7 +26,6 @@ int Engine::run() {
 		NOW = SDL_GetPerformanceCounter();
 
 		deltaTime = ((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency()) * 0.001;
-		SDL_GL_SwapWindow(_screen->getView());
 
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) {
@@ -92,39 +91,54 @@ int Engine::run() {
 		}
 	}
 
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 		_camera.update(deltaTime);
+		//glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
+		//{ // Geometry pass for information.
+		//	_geometryPass->useProgram();
+		//	// Texture.
+		//	_geometryPass->setValue(0, bog);
+		//	_geometryPass->setValue(1, _camera.getView());
+		//	_geometryPass->setValue(2, _camera.getProj());
+		//	_geometryPass->setValue(22, 0);
+		//	_testTexture->bind(0);
+		//	// Bind FBO for gBuffers
+		//	//_renderer->render(_screen.get(), _geometryPass);
+		//	_deferredFBO->bind();
+		//	_renderer->render(_screen.get(), _models, _geometryPass);
+		//}
 
-		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
-		{ // Geometry pass for information.
-			_geometryPass->useProgram();
-			// Texture.
-			_geometryPass->setValue(0, bog);
-			_geometryPass->setValue(1, _camera.getViewProj());
-			_geometryPass->setValue(22, 0);
-			_testTexture->bind(0);
-			// Bind FBO for gBuffers
-			//_renderer->render(_screen.get(), _geometryPass);
-			_deferredFBO->bind();
-			_renderer->render(_screen.get(), _models, _geometryPass);
-		}
+		//{ // Lighting pass to reconstruct scene.
+		//	_lightingPass->useProgram();
+		//	_lightingPass->setValue(20, 0);
+		//	_lightingPass->setValue(21, 1);
+		//	_lightingPass->setValue(22, 2);
+		//	_lightingPass->setValue(23, 3);
+		//	_lightingPass->setValue(18, _camera.zNear);
+		//	_lightingPass->setValue(19, _camera.zFar);
+		//	(*_deferredFBO)[0]->bind(0);
+		//	(*_deferredFBO)[1]->bind(1);
+		//	(*_deferredFBO)[2]->bind(2);
+		//	_deferredFBO->bindDepth(3);
 
-		{ // Lighting pass to reconstruct scene.
-			_lightingPass->useProgram();
-			_lightingPass->setValue(20, 0);
-			_lightingPass->setValue(21, 1);
-			_lightingPass->setValue(22, 2);
-			_lightingPass->setValue(23, 3);
-			_lightingPass->setValue(18, _camera.zNear);
-			_lightingPass->setValue(19, _camera.zFar);
-			(*_deferredFBO)[0]->bind(0);
-			(*_deferredFBO)[1]->bind(1);
-			(*_deferredFBO)[2]->bind(2);
-			_deferredFBO->bindDepth(3);
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			_renderer->render(_screen.get(), _lightingPass);
-		}
+		//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//	_renderer->render(_screen.get(), _lightingPass);
+		//}
 		
+		_particleSystem->update(deltaTime, _computeShader);
+		{ // Particle pass.
+			auto ssbos = _particleSystem->getSSBuffers();
+			_particlePass->useProgram();
+			_particlePass->setValue(6, _camera.getView());
+			_particlePass->setValue(7, _camera.getProj());
+			for (int i = 0; i < ssbos.size(); i++) {
+				//ssbos[i]->bindBase(i);
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		}
+
+		SDL_GL_SwapWindow(_screen->getView());
 	}
 
 	return 0;
@@ -145,6 +159,16 @@ void Engine::_init() {
 	_lightingPass = new ShaderProgram("Lighting Pass");
 	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
+		.finalize();
+
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();
+
+	_particlePass = new ShaderProgram("Particle Pass");
+	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
+		.attachShader(ShaderProgram::ShaderType::GeometryShader, "assets/shaders/particlePass.geom")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/particlePass.frag")
 		.finalize();
 
 	_initWorld();
@@ -168,6 +192,6 @@ void Engine::_initWorld() {
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
 	_models.push_back(_meshLoader->loadMesh("assets/models/default_scene.fbx"));
-	_camera = Camera();
-	_camera.position = glm::vec3(0, 0, -10);
+	_particleSystem = new ParticleSystem();
+	_camera.position = glm::vec3(0, 0, 0);
 }

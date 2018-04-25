@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/glm.hpp>
 
-struct Camera
-{
+class Camera{
+public:
 	glm::ivec2 mousePos = {0,0};
 	glm::vec3 position = {0,0,0};
 	glm::quat orientation;
@@ -18,11 +18,12 @@ struct Camera
 	bool moveLeft = false;
 	
 	float zNear = 0.1f;
-	float zFar = 100.f;
+	float zFar = 50.f;
 	float pitch;
 	float yaw;
 
 	void update(float dt);
 
-	glm::mat4 getViewProj();
+	glm::mat4 getView();
+	glm::mat4 getProj();
 };

@@ -47,22 +47,13 @@ void Camera::update(float dt) {
 		position.y -= speed * dt;
 }
 
-glm::mat4 Camera::getViewProj() {
+glm::mat4 Camera::getView() {
+	return glm::inverse(glm::translate(position) * glm::mat4_cast(glm::rotate(orientation, glm::pi<float>(), glm::vec3(0, 1, 0))));
+}
+
+glm::mat4 Camera::getProj() {
 	auto size = Engine::getInstance()->getWindow()->getSizes();
 	float aspect = size.x / size.y;
 
-	glm::mat4 proj = glm::perspective(glm::radians(70.f), aspect, zNear, zFar);
-	glm::mat4 view = glm::inverse(glm::translate(position) * glm::mat4_cast(glm::rotate(orientation, glm::pi<float>(), glm::vec3(0, 1, 0))));
-
-	// for isometric
-	//proj = glm::ortho(-500.f*aspect, 500.f*aspect, -500.f, 500.f, 0.f, 2000.f);
-	//view = glm::lookAt(position - 2000.f*normalize(glm::vec3(1, -1, 1)), position, glm::vec3(0, 1, 0));
-
-
-	// for top-down
-	//float hsize = 10000;
-	//proj = glm::ortho(-hsize, hsize, -hsize/aspect, hsize / aspect, 0.f, 3000.f);
-	//view = glm::lookAt(position - 2000.f*normalize(glm::vec3(0, -1, 0)), position, glm::vec3(0, 0, 1));
-
-	return proj * view;
+	return glm::perspective(glm::radians(70.f), aspect, zNear, zFar);
 }

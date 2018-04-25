@@ -14,12 +14,13 @@ out vec2 vUV;
 //layout (location = 1) uniform mat4 v;
 //layout (location = 2) uniform mat4 m;
 layout(location = 0) uniform mat4 m;
-layout(location = 1) uniform mat4 vp;
+layout(location = 1) uniform mat4 v;
+layout(location = 2) uniform mat4 p;
 
 void main(){
 	vPos = vec3(m * vec4(pos, 1)).xyz;
 	vNormal = normalize(vec3(m * vec4(normal, 1)).xyz);
 	vColor = color;
 	vUV = uv;
-	gl_Position = vp * vec4(vPos, 1.0f);
+	gl_Position = p * v * vec4(vPos, 1.0f);
 }
