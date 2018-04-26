@@ -59,6 +59,7 @@ void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(_fullscreenQuad->getVAO());
 	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+	glBindVertexArray(0);
 }
 
 void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgram* shader){
@@ -70,16 +71,17 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 		for (auto mesh : model.meshes) {
 			glBindVertexArray(mesh->getVAO());
 			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+			glBindVertexArray(0);
 		}
 	}
-	glBindVertexArray(0);
 }
 
 void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::vector<ParticleSystem::Particle>& particles) {
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0.1, 0.1, 0.1, 1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_NONE);
 
 	glBindVertexArray(_emptyVAO);
 	glDrawArraysInstanced(GL_POINTS, 0, 1, particles.size());
+	glBindVertexArray(0);
 }
