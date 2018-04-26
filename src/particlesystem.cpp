@@ -1,16 +1,20 @@
 #include "particlesystem.hpp"
 #define NUMBER_OF_EMITTERS 1
 
+
+
 ParticleSystem::ParticleSystem() {
 	_nrOfParticles = 768;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
+	std::vector<glm::vec4> velocities;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(i, i, i, 0));
-		directions.push_back(p.dir = glm::vec4(0, -1, 0,0));
-		colors.push_back(p.color = (glm::vec4(i / 60.f, i / 40.f, i / 20.f, 3)));
+		positions.push_back(p.pos = glm::vec4(0, 0, 0, 0));
+		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), 0));
+		velocities.push_back(glm::vec4(0));
+		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.2f, 0.5f))));
 		_particles.push_back(p);
 	}
 
@@ -24,6 +28,7 @@ ParticleSystem::ParticleSystem() {
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
 	//_setupBuffers();
 }
 

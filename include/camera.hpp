@@ -16,11 +16,13 @@ public:
 	bool moveBack = false;
 	bool moveRight = false;
 	bool moveLeft = false;
+	bool enableMouse = true;
 	
 	float zNear = 0.1f;
 	float zFar = 50.f;
 	float pitch;
 	float yaw;
+	float counter = 0.f;
 
 	void update(float dt);
 

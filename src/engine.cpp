@@ -64,6 +64,13 @@ int Engine::run() {
 			case SDLK_d:
 				_camera.moveRight = true;
 				break;
+			case SDLK_LALT:
+				if (_camera.counter >= 1.f) {
+					_camera.enableMouse = !_camera.enableMouse;
+					SDL_ShowCursor(_camera.enableMouse);
+					_camera.counter = 0.f;
+				}
+				break;
 			default:
 				break;
 			}
@@ -188,8 +195,6 @@ int Engine::run() {
 		ImGui::Render();
 		ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(_screen->getView());
-		
-		
 	}
 
 

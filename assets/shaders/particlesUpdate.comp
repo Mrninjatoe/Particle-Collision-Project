@@ -13,6 +13,11 @@ layout (std430, binding = 2) buffer ColorBuffer {
 	vec4 colors[];
 };
 
+layout (std430, binding = 3) buffer VelocityBuffer{
+	vec4 velocities[];
+};
+
+
 layout(location = 6) uniform float delta;
 layout(location = 7) uniform vec3 spawnPos;
 
@@ -25,12 +30,15 @@ void main(){
 	vec4 pos = positions[index];
 	vec4 dir = directions[index];
 	vec4 color = colors[index];
-
-	dir = dir;
-	pos += dir * delta;
+	vec4 vel = velocities[index];
+	
+	pos = pos + (vel * dir * delta) + (0.5f * 0.2 * delta * delta);
+	vel = vel + 0.2f * delta; // 0.2 is accleration.
 	color = colors[index];
+	barrier();
 
 	positions[index] = pos;
 	directions[index] = dir;
 	colors[index] = color;
+	velocities[index] = vel;
 }

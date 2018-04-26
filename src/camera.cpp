@@ -6,17 +6,19 @@
 
 void Camera::update(float dt) {
 	// DEBUG FPS CAMERA
-	glm::ivec2 dm = mousePos;
-	SDL_GetMouseState(&mousePos.x, &mousePos.y);
-	if (dm != mousePos) {
-		auto sizes = Engine::getInstance()->getWindow()->getSizes();
-		mousePos -= sizes / 2;
+	if (!enableMouse){
+		glm::ivec2 dm = mousePos;
+		SDL_GetMouseState(&mousePos.x, &mousePos.y);
+		if (dm != mousePos) {
+			auto sizes = Engine::getInstance()->getWindow()->getSizes();
+			mousePos -= sizes / 2;
 
-		pitch += dm.y * 0.001f;
-		yaw -= dm.x * 0.001f;
-		float hpi = glm::half_pi<float>() - 0.001;
-		pitch = glm::clamp(pitch, -hpi, hpi);
-		SDL_WarpMouseInWindow(Engine::getInstance()->getWindow()->getView(), sizes.x / 2, sizes.y / 2);
+			pitch += dm.y * 0.001f;
+			yaw -= dm.x * 0.001f;
+			float hpi = glm::half_pi<float>() - 0.001;
+			pitch = glm::clamp(pitch, -hpi, hpi);
+			SDL_WarpMouseInWindow(Engine::getInstance()->getWindow()->getView(), sizes.x / 2, sizes.y / 2);
+		}
 	}
 	float speed = 350.f;
 	if (pressedShift)
@@ -45,6 +47,8 @@ void Camera::update(float dt) {
 
 	if (moveDown)
 		position.y -= speed * dt;
+	
+	counter += 1 * dt;
 }
 
 glm::mat4 Camera::getView() {

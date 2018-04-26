@@ -469,7 +469,7 @@ void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
 #endif
 
     // Update OS/hardware mouse cursor if imgui isn't drawing a software cursor
-    if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) == 0)
+   /* if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) == 0)
     {
         ImGuiMouseCursor cursor = ImGui::GetMouseCursor();
         if (io.MouseDrawCursor || cursor == ImGuiMouseCursor_None)
@@ -481,7 +481,7 @@ void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
             SDL_SetCursor(g_MouseCursors[cursor] ? g_MouseCursors[cursor] : g_MouseCursors[ImGuiMouseCursor_Arrow]);
             SDL_ShowCursor(1);
         }
-    }
+    }*/
 
     // Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
     ImGui::NewFrame();

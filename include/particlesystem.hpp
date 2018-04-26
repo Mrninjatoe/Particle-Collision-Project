@@ -15,6 +15,7 @@ public:
 		position = 0,
 		direction = 1,
 		color = 2,
+		velocities = 3
 	};
 
 	struct Particle {
@@ -42,4 +43,9 @@ private:
 
 	void _setupBuffers();
 	void _setupAttributes(Emitter& e);
+	inline double _fRand(double fMin, double fMax)
+	{
+		double f = (double)rand() / RAND_MAX;
+		return fMin + f * (fMax - fMin);
+	}
 };
