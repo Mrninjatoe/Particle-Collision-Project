@@ -41,7 +41,6 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 		GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true
 	);
 
-
 	SDL_GL_SetSwapInterval(1);
 
 	glEnable(GL_DEPTH_TEST);
@@ -50,9 +49,13 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	glDisable(GL_CULL_FACE);
 
 	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
+
+	glGenVertexArrays(1, &_emptyVAO);
+	glBindVertexArray(0);
 }
 
 GLRenderer::~GLRenderer() {
+	glDeleteBuffers(1, &_emptyVAO);
 	SDL_GL_DeleteContext(_context);
 }
 
@@ -63,7 +66,7 @@ void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(_fullscreenQuad->getVAO());
 	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-	//glDrawElementsInstanced(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_INT, NULL, 1);
+	glBindVertexArray(0);
 }
 
 void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgram* shader){
@@ -71,14 +74,21 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	glClearColor(0, 0, 0, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	//glBindVertexArray(_fullscreenQuad->getVAO());
-	//glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-	int offset = -3;
 	for (auto model : models) {
 		for (auto mesh : model.meshes) {
-			glBindVertexArray(mesh.getVAO());
-			glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+			glBindVertexArray(mesh->getVAO());
+			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+			glBindVertexArray(0);
 		}
-		offset += 3;
 	}
+}
+
+void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::vector<ParticleSystem::Particle>& particles) {
+	glViewport(0, 0, window->getWidth(), window->getHeight());
+	glClearColor(0.1, 0.1, 0.1, 1.0f);
+	glClear(GL_NONE);
+
+	glBindVertexArray(_emptyVAO);
+	glDrawArraysInstanced(GL_POINTS, 0, 1, particles.size());
+	glBindVertexArray(0);
 }

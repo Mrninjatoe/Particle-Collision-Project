@@ -149,9 +149,11 @@
     <ClCompile Include="src\imgui_demo.cpp" />
     <ClCompile Include="src\imgui_draw.cpp" />
     <ClCompile Include="src\imgui_impl_sdl_gl3.cpp" />
+    <ClCompile Include="src\GLGraphics\glshaderstoragebuffer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\meshloader.cpp" />
+    <ClCompile Include="src\particlesystem.cpp" />
     <ClCompile Include="src\shaderprogram.cpp" />
     <ClCompile Include="src\textureloader.cpp" />
     <ClCompile Include="src\window.cpp" />
@@ -161,9 +163,11 @@
     <ClInclude Include="include\engine.hpp" />
     <ClInclude Include="include\GLGraphics\glframebuffer.hpp" />
     <ClInclude Include="include\GLGraphics\glrenderer.hpp" />
+    <ClInclude Include="include\GLGraphics\glshaderstoragebuffer.hpp" />
     <ClInclude Include="include\GLGraphics\gltexture.hpp" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\meshloader.hpp" />
+    <ClInclude Include="include\particlesystem.hpp" />
     <ClInclude Include="include\shaderprogram.hpp" />
     <ClInclude Include="include\textureloader.hpp" />
     <ClInclude Include="include\window.hpp" />

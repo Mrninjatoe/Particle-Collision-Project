@@ -36,7 +36,6 @@ int Engine::run() {
 		NOW = SDL_GetPerformanceCounter();
 
 		deltaTime = ((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency()) * 0.001;
-		//SDL_GL_SwapWindow(_screen->getView());
 
 		while (SDL_PollEvent(&event)) {
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
@@ -106,17 +105,16 @@ int Engine::run() {
 		}
 		ImGui_ImplSdlGL3_NewFrame(_screen->getView());
 		_camera.update(deltaTime);
-
 		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
 			_geometryPass->setValue(0, bog);
-			_geometryPass->setValue(1, _camera.getViewProj());
+			_geometryPass->setValue(1, _camera.getView());
+			_geometryPass->setValue(2, _camera.getProj());
 			_geometryPass->setValue(22, 0);
 			_testTexture->bind(0);
-			// Bind FBO for gBuffers
-			//_renderer->render(_screen.get(), _geometryPass);
+			// Bind FBO for gBuffers output
 			_deferredFBO->bind();
 			_renderer->render(_screen.get(), _models, _geometryPass);
 		}
@@ -138,7 +136,18 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _lightingPass);
 		}
 
-		
+		_particleSystem->update(deltaTime, _computeShader);
+		{ // Particle pass.
+			auto ssbos = _particleSystem->getSSBuffers();
+			_particlePass->useProgram();
+			_particlePass->setValue(6, _camera.getView());
+			_particlePass->setValue(7, _camera.getProj());
+			for (int i = 0; i < ssbos.size(); i++) {
+				//ssbos[i]->bindBase(i);
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		}
 
 		{
 			static float f = 0.0f;
@@ -180,6 +189,7 @@ int Engine::run() {
 		ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(_screen->getView());
 		
+		
 	}
 
 
@@ -202,9 +212,17 @@ void Engine::_init() {
 	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
-	
-	
-	
+
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();
+
+	_particlePass = new ShaderProgram("Particle Pass");
+	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
+		.attachShader(ShaderProgram::ShaderType::GeometryShader, "assets/shaders/particlePass.geom")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/particlePass.frag")
+		.finalize();
+
 	_initWorld();
 }
 
@@ -218,14 +236,14 @@ void Engine::_initializeGL() {
 
 void Engine::_initWorld() {
 	_testTexture = _textureLoader->loadTexture("assets/textures/sleeping_pupper.png");
-	_deferredFBO = std::make_shared<GLFrameBuffer>();
+	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
 		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
 		.addTexture(1, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx"));
-	_camera = Camera();
-	_camera.position = glm::vec3(0, 0, -10);
+	_models.push_back(_meshLoader->loadMesh("assets/models/default_scene.fbx"));
+	_particleSystem = new ParticleSystem();
+	_camera.position = glm::vec3(0, 0, 0);
 }

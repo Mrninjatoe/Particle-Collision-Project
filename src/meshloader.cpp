@@ -14,7 +14,7 @@ MeshLoader::~MeshLoader() {
 //
 //}
 
-Mesh MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Mesh::Vertex> vertices;
 	std::vector<unsigned short> indices;
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -53,7 +53,7 @@ Mesh MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
-	return Mesh(vertices, indices);
+	return new Mesh(vertices, indices);
 }
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
