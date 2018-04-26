@@ -4,17 +4,18 @@
 
 
 ParticleSystem::ParticleSystem() {
-	_nrOfParticles = 768;
+	_nrOfParticles = 7680;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(0, 0, 0, 0));
-		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), 0));
+		float spawnHP = _fRand(5.f, 10.f);
+		positions.push_back(p.pos = glm::vec4(0, 0, 0, spawnHP));
+		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), spawnHP));
+		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.1f, 0.3f))));
 		velocities.push_back(glm::vec4(0));
-		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.2f, 0.5f))));
 		_particles.push_back(p);
 	}
 

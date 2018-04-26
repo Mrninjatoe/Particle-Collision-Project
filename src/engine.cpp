@@ -149,6 +149,8 @@ int Engine::run() {
 			_particlePass->useProgram();
 			_particlePass->setValue(6, _camera.getView());
 			_particlePass->setValue(7, _camera.getProj());
+			_particlePass->setValue(20, 0);
+			_testTexture->bind(0);
 			for (int i = 0; i < ssbos.size(); i++) {
 				//ssbos[i]->bindBase(i);
 			}

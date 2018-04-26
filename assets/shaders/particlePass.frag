@@ -3,11 +3,14 @@
 in vec4 gColor;
 in vec2 gUV;
 
+
 out vec4 fColor;
 
-//layout(location = 20) uniform sampler2D depth;
+layout(location = 20) uniform sampler2D inTexture;
 
 void main(){
-	fColor = gColor;
+	vec4 textureColor = texture(inTexture, vec2(gUV.x, 1 - gUV.y));
+	fColor = textureColor * gColor;
+
 	//gl_FragDepth = texture(depth, gUV).x;
 }
