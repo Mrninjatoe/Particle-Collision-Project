@@ -41,7 +41,7 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	glDepthFunc(GL_LESS);
 	glDisable(GL_CULL_FACE);
 
-	//_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
+	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
 
 	glGenVertexArrays(1, &_emptyVAO);
 	glBindVertexArray(0);
@@ -68,16 +68,17 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	
 	for (auto model : models) {
 		for (auto mesh : model.meshes) {
-			glBindVertexArray(mesh.getVAO());
-			glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+			glBindVertexArray(mesh->getVAO());
+			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
 		}
 	}
+	glBindVertexArray(0);
 }
 
 void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::vector<ParticleSystem::Particle>& particles) {
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0.1, 0.1, 0.1, 1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindVertexArray(_emptyVAO);
 	glDrawArraysInstanced(GL_POINTS, 0, 1, particles.size());

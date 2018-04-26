@@ -10,7 +10,7 @@ class MeshLoader {
 public:
 	MeshLoader();
 	~MeshLoader();
-	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+	Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
 	void processNode(aiNode* node, const aiScene* scene, Model& models);
 	Model loadMesh(const char* path);
 	Mesh* getQuad();

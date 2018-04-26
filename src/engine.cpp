@@ -91,39 +91,37 @@ int Engine::run() {
 		}
 	}
 
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 		_camera.update(deltaTime);
-		//glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
-		//{ // Geometry pass for information.
-		//	_geometryPass->useProgram();
-		//	// Texture.
-		//	_geometryPass->setValue(0, bog);
-		//	_geometryPass->setValue(1, _camera.getView());
-		//	_geometryPass->setValue(2, _camera.getProj());
-		//	_geometryPass->setValue(22, 0);
-		//	_testTexture->bind(0);
-		//	// Bind FBO for gBuffers
-		//	//_renderer->render(_screen.get(), _geometryPass);
-		//	_deferredFBO->bind();
-		//	_renderer->render(_screen.get(), _models, _geometryPass);
-		//}
+		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
+		{ // Geometry pass for information.
+			_geometryPass->useProgram();
+			// Texture.
+			_geometryPass->setValue(0, bog);
+			_geometryPass->setValue(1, _camera.getView());
+			_geometryPass->setValue(2, _camera.getProj());
+			_geometryPass->setValue(22, 0);
+			_testTexture->bind(0);
+			// Bind FBO for gBuffers output
+			_deferredFBO->bind();
+			_renderer->render(_screen.get(), _models, _geometryPass);
+		}
 
-		//{ // Lighting pass to reconstruct scene.
-		//	_lightingPass->useProgram();
-		//	_lightingPass->setValue(20, 0);
-		//	_lightingPass->setValue(21, 1);
-		//	_lightingPass->setValue(22, 2);
-		//	_lightingPass->setValue(23, 3);
-		//	_lightingPass->setValue(18, _camera.zNear);
-		//	_lightingPass->setValue(19, _camera.zFar);
-		//	(*_deferredFBO)[0]->bind(0);
-		//	(*_deferredFBO)[1]->bind(1);
-		//	(*_deferredFBO)[2]->bind(2);
-		//	_deferredFBO->bindDepth(3);
+		{ // Lighting pass to reconstruct scene.
+			_lightingPass->useProgram();
+			_lightingPass->setValue(20, 0);
+			_lightingPass->setValue(21, 1);
+			_lightingPass->setValue(22, 2);
+			_lightingPass->setValue(23, 3);
+			_lightingPass->setValue(18, _camera.zNear);
+			_lightingPass->setValue(19, _camera.zFar);
+			(*_deferredFBO)[0]->bind(0);
+			(*_deferredFBO)[1]->bind(1);
+			(*_deferredFBO)[2]->bind(2);
+			_deferredFBO->bindDepth(3);
 
-		//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//	_renderer->render(_screen.get(), _lightingPass);
-		//}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_renderer->render(_screen.get(), _lightingPass);
+		}
 		
 		_particleSystem->update(deltaTime, _computeShader);
 		{ // Particle pass.
@@ -184,7 +182,7 @@ void Engine::_initializeGL() {
 
 void Engine::_initWorld() {
 	_testTexture = _textureLoader->loadTexture("assets/textures/sleeping_pupper.png");
-	_deferredFBO = std::make_shared<GLFrameBuffer>();
+	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
 		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
 		.addTexture(1, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())

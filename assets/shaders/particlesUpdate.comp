@@ -28,7 +28,7 @@ void main(){
 
 	dir = dir;
 	pos += dir * delta;
-	color = vec4(1,0,0,0);
+	color = colors[index];
 
 	positions[index] = pos;
 	directions[index] = dir;
