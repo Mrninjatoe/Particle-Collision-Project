@@ -1,6 +1,8 @@
 #include <iostream>
 #include "GLGraphics/glrenderer.hpp"
 #include "engine.hpp"
+#include <ImGui/imgui.h>
+#include <ImGui/imgui_impl_sdl_gl3.h>
 
 GLRenderer::GLRenderer(SDL_Window* window) {
 	// Request an OpenGL 4.6 context (should be core)
@@ -25,6 +27,11 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	printf("Vendor:   %s\n", glGetString(GL_VENDOR));
 	printf("Renderer: %s\n", glGetString(GL_RENDERER));
 	printf("Version:  %s\n", glGetString(GL_VERSION));
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui_ImplSdlGL3_Init(window);
+	ImGui::StyleColorsDark();
 
 	// Enable the debug callback
 	glEnable(GL_DEBUG_OUTPUT);

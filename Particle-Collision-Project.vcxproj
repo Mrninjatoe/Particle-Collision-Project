@@ -145,6 +145,10 @@
     <ClCompile Include="src\GLGraphics\glframebuffer.cpp" />
     <ClCompile Include="src\GLGraphics\glrenderer.cpp" />
     <ClCompile Include="src\GLGraphics\gltexture.cpp" />
+    <ClCompile Include="src\imgui.cpp" />
+    <ClCompile Include="src\imgui_demo.cpp" />
+    <ClCompile Include="src\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\meshloader.cpp" />

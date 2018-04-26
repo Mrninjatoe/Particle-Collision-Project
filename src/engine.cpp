@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "engine.hpp"
 #include <glm/gtx/transform.hpp>
+#include <ImGui/imgui.h>
+#include <ImGui/imgui_impl_sdl_gl3.h>
 
 Engine* Engine::_instance;
 
@@ -13,6 +15,14 @@ Engine::Engine() {
 int Engine::run() {
 	_init();
 
+	
+
+	
+
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	
 	SDL_Event event;
 
 	Uint64 NOW = SDL_GetPerformanceCounter();
@@ -26,9 +36,10 @@ int Engine::run() {
 		NOW = SDL_GetPerformanceCounter();
 
 		deltaTime = ((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency()) * 0.001;
-		SDL_GL_SwapWindow(_screen->getView());
+		//SDL_GL_SwapWindow(_screen->getView());
 
 		while (SDL_PollEvent(&event)) {
+			ImGui_ImplSdlGL3_ProcessEvent(&event);
 			if (event.type == SDL_QUIT) {
 				quit = true;
 			}
@@ -89,9 +100,11 @@ int Engine::run() {
 				break;
 			default:
 				break;
-		}
-	}
+			}
 
+		
+		}
+		ImGui_ImplSdlGL3_NewFrame(_screen->getView());
 		_camera.update(deltaTime);
 
 		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
@@ -124,8 +137,51 @@ int Engine::run() {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
 		}
+
+		
+
+		{
+			static float f = 0.0f;
+			static int counter = 0;
+			ImGui::Text("Hello world!");
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("clear_color", (float*)&clear_color);
+
+			ImGui::Checkbox("Demo window", &show_demo_window);
+			ImGui::Checkbox("Another window", &show_another_window);
+
+			if (ImGui::Button("Button"))
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		}
+
+
+		if (show_another_window) {
+			ImGui::Begin("Another window", &show_another_window);
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close"))
+				show_another_window = false;
+			ImGui::End();
+		}
+
+		if (show_demo_window) {
+			ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+			ImGui::ShowDemoWindow(&show_demo_window);
+		}
+
+		//glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
+		//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		//glClear(GL_COLOR_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		ImGui::Render();
+		ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
+		SDL_GL_SwapWindow(_screen->getView());
 		
 	}
+
 
 	return 0;
 }
@@ -141,12 +197,14 @@ void Engine::_init() {
 	_geometryPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/geometryPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/geometryPass.frag")
 		.finalize();
-
+	
 	_lightingPass = new ShaderProgram("Lighting Pass");
 	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
-
+	
+	
+	
 	_initWorld();
 }
 
