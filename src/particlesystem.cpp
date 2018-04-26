@@ -12,9 +12,9 @@ ParticleSystem::ParticleSystem() {
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
 		float spawnHP = _fRand(5.f, 10.f);
-		positions.push_back(p.pos = glm::vec4(0, 0, 0, spawnHP));
+		positions.push_back(p.pos = glm::vec4(0, 5, 0, spawnHP));
 		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), spawnHP));
-		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.1f, 0.3f))));
+		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.01f, 0.1f))));
 		velocities.push_back(glm::vec4(0));
 		_particles.push_back(p);
 	}
@@ -43,7 +43,7 @@ ParticleSystem::~ParticleSystem() {
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	shader->useProgram();
 	shader->setValue(6, delta);
-	shader->setValue(7, glm::vec3(0));
+	shader->setValue(7, glm::vec3(0, 2, 0));
 	for (int i = 0; i < _ssbos.size(); i++) {
 		_ssbos[i]->bindBase(i);
 	}

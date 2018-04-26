@@ -38,6 +38,7 @@ void main(){
 		vel.xyz = vec3(0);
 	}
 	pos.xyz = pos.xyz + (vel.xyz * dir.xyz * delta) + (0.5f * 0.2 * delta * delta);
+	pos.xyz = pos.xyz + vec3(0, -1, 0) * delta;
 	vel = vel + 0.2f * delta; // 0.2 is accleration.
 	color = colors[index];
 	barrier();
