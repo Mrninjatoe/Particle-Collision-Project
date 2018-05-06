@@ -10,7 +10,7 @@ layout(location = 20) uniform sampler2D inTexture;
 
 void main(){
 	vec4 textureColor = texture(inTexture, vec2(gUV.x, 1 - gUV.y));
-	fColor = textureColor * gColor;
+	fColor = textureColor;
 
 	//gl_FragDepth = texture(depth, gUV).x;
 }

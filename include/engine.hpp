@@ -7,6 +7,7 @@
 #include "GLGraphics/glframebuffer.hpp"
 #include "camera.hpp"
 #include "particlesystem.hpp"
+#include "octree.hpp"
 class Engine {
 public:
 	Engine();
@@ -42,6 +43,8 @@ private:
 	ShaderProgram* _lightingPass;
 	ShaderProgram* _particlePass;
 	ShaderProgram* _computeShader;
+	ShaderProgram* _octreePass;
+	Octree* _octree;
 
 	void _init();
 	void _initializeSDL();

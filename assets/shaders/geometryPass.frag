@@ -15,5 +15,6 @@ void main(){
 	gPosition = vPos;
 	gNormal = vNormal;
 	//gAlbedoSpec = texture(modelTexture, vUV);
-	gAlbedoSpec = vec4(0.69, 0.39, 0.99, 0);
+	//gAlbedoSpec = vec4(0.69, 0.39, 0.99, 0);
+	gAlbedoSpec = vec4(vColor, 0);
 }

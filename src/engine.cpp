@@ -112,7 +112,7 @@ int Engine::run() {
 		}
 		ImGui_ImplSdlGL3_NewFrame(_screen->getView());
 		_camera.update(deltaTime);
-		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0)) * glm::scale(glm::vec3(0.01f));
+		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
@@ -143,19 +143,26 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _lightingPass);
 		}
 
-		_particleSystem->update(deltaTime, _computeShader);
-		{ // Particle pass.
-			auto ssbos = _particleSystem->getSSBuffers();
-			_particlePass->useProgram();
-			_particlePass->setValue(6, _camera.getView());
-			_particlePass->setValue(7, _camera.getProj());
-			_particlePass->setValue(20, 0);
-			_testTexture->bind(0);
-			for (int i = 0; i < ssbos.size(); i++) {
-				//ssbos[i]->bindBase(i);
-			}
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		//_particleSystem->update(deltaTime, _computeShader);
+		//{ // Particle pass.
+		//	auto ssbos = _particleSystem->getSSBuffers();
+		//	_particlePass->useProgram();
+		//	_particlePass->setValue(6, _camera.getView());
+		//	_particlePass->setValue(7, _camera.getProj());
+		//	_particlePass->setValue(20, 0);
+		//	_testTexture->bind(0);
+		//	for (int i = 0; i < ssbos.size(); i++) {
+		//		//ssbos[i]->bindBase(i);
+		//	}
+		//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//	_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		//}
+
+		{ // Octree renderer.
+			_octreePass->useProgram();
+			_octreePass->setValue(6, _camera.getView());
+			_octreePass->setValue(7, _camera.getProj());
+			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
 		}
 
 		{
@@ -230,6 +237,11 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/particlePass.frag")
 		.finalize();
 
+	_octreePass = new ShaderProgram("Octree Pass");
+	_octreePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/octreePass.vert")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/octreePass.frag")
+		.finalize();
+
 	_initWorld();
 }
 
@@ -242,7 +254,7 @@ void Engine::_initializeGL() {
 }
 
 void Engine::_initWorld() {
-	_testTexture = _textureLoader->loadTexture("assets/textures/sleeping_pupper.png");
+	_testTexture = _textureLoader->loadTexture("assets/textures/bonparticles.png");
 	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
 		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
@@ -250,7 +262,17 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_models.push_back(_meshLoader->loadMesh("assets/models/default_scene.fbx"));
+	_models.push_back(_meshLoader->loadMesh("assets/models/test_scene.fbx"));
 	_particleSystem = new ParticleSystem();
 	_camera.position = glm::vec3(0, 0, 0);
+
+	glm::vec3 min = glm::vec3(0);
+	glm::vec3 max = glm::vec3(0);
+	for (auto model : _models) {
+		min = glm::min(min, model.boundingBox.min);
+		max = glm::max(max, model.boundingBox.max);
+	}
+	printf("NUMBER OF MODELS: %zu\n", _models.size());
+	printf("NUMBER OF MESHES: %zu\n", _models[0].meshes.size());
+	_octree = new Octree(new Box(min, max), _models[0].meshes, 0);
 }

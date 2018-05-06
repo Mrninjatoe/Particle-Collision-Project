@@ -57,7 +57,7 @@ glm::mat4 Camera::getView() {
 
 glm::mat4 Camera::getProj() {
 	auto size = Engine::getInstance()->getWindow()->getSizes();
-	float aspect = size.x / size.y;
+	float aspect = size.x / (float)size.y;
 
 	return glm::perspective(glm::radians(70.f), aspect, zNear, zFar);
 }

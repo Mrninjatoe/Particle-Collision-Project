@@ -1,10 +1,8 @@
 #include "particlesystem.hpp"
 #define NUMBER_OF_EMITTERS 1
 
-
-
 ParticleSystem::ParticleSystem() {
-	_nrOfParticles = 7680;
+	_nrOfParticles = 1024;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
