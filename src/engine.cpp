@@ -5,6 +5,13 @@
 #include <glm/gtx/transform.hpp>
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_sdl_gl3.h>
+#define GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX          0x9047
+#define GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX    0x9048
+#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX  0x9049
+#define GPU_MEMORY_INFO_EVICTION_COUNT_NVX            0x904A
+#define GPU_MEMORY_INFO_EVICTED_MEMORY_NVX            0x904B
+
+
 
 Engine* Engine::_instance;
 
@@ -143,6 +150,12 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _lightingPass);
 		}
 
+		_computeShader->useProgram();
+		_computeShader->setValue(5, _camera.position);
+		_computeShader->setValue(8, _camera.getView());
+		_computeShader->setValue(9, _camera.getProj());
+		_computeShader->setValue(20, 0);
+		_deferredFBO->bindDepth(0);
 		_particleSystem->update(deltaTime, _computeShader);
 		{ // Particle pass.
 			auto ssbos = _particleSystem->getSSBuffers();
@@ -157,21 +170,49 @@ int Engine::run() {
 		}
 
 		{
-			static float f = 0.0f;
-			static int counter = 0;
-			ImGui::Text("Hello world!");
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-			ImGui::ColorEdit3("clear_color", (float*)&clear_color);
-
-			ImGui::Checkbox("Demo window", &show_demo_window);
-			ImGui::Checkbox("Another window", &show_another_window);
-
-			if (ImGui::Button("Button"))
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
+			//GLint total_mem_kb = 0;
+			//glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX,
+			//	&total_mem_kb);
+			//GLint cur_avail_mem_kb = 0;
+			//glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
+			//	&cur_avail_mem_kb);
+		     
+			GLint dedvram = 0;
+			GLint tavram = 0;
+			GLint cavram = 0;
+			GLint eviccount = 0;
+			GLint evicmem = 0;
+			
+			glGetIntegerv(GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &dedvram);
+			glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &tavram);
+			glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &cavram);
+			glGetIntegerv(GPU_MEMORY_INFO_EVICTION_COUNT_NVX, &eviccount);
+			glGetIntegerv(GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &evicmem);
+			
+			
+			
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			//ImGui::Text("VRAM: %d MB", (total_mem_kb - cur_avail_mem_kb) / 1000);
+			ImGui::Text("Dedicated vram: %d MB", dedvram / 1000);
+			ImGui::Text("Total available vram: %d MB", tavram / 1000);
+			ImGui::Text("Current available vram: %d MB", cavram / 1000);
+			ImGui::Text("Eviction count: %d MB", eviccount);
+			ImGui::Text("Eviction memory: %d MB", evicmem / 1000);
+			//static float f = 0.0f;
+			//static int counter = 0;
+			//ImGui::Text("Hello world!");
+			//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			//ImGui::ColorEdit3("clear_color", (float*)&clear_color);
+			//
+			//ImGui::Checkbox("Demo window", &show_demo_window);
+			//ImGui::Checkbox("Another window", &show_another_window);
+			//
+			//if (ImGui::Button("Button"))
+			//	counter++;
+			//ImGui::SameLine();
+			//ImGui::Text("counter = %d", counter);
+
+			
 		}
 
 

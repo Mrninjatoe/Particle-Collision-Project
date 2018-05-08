@@ -9,6 +9,7 @@ layout (std430, binding = 1) buffer DirectionBuffer {
 		vec4 directions[];
 };
 
+// alpha is radius
 layout (std430, binding = 2) buffer ColorBuffer {
 	vec4 colors[];
 };
@@ -17,13 +18,37 @@ layout (std430, binding = 3) buffer VelocityBuffer{
 	vec4 velocities[];
 };
 
+//bind depth and camera
 
+layout(location = 5) uniform vec3 camPos;
 layout(location = 6) uniform float delta;
 layout(location = 7) uniform vec3 spawnPos;
+layout(location = 8) uniform mat4 v;
+layout(location = 9) uniform mat4 p;
+
+layout(location = 20) uniform sampler2D depth;
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
+
+vec3 viewSpacePoint(vec2 uv) {
+	//float z = texture(depth, uv).r;
+	//vec4 w_pos = vec4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, z, 1.0);
+	//vec4 v_pos = inverse(p) * w_pos;
+	//return (v_pos / v_pos.w).xyz;
+
+	mat4 invProj = inverse(p);
+	float z = texture(depth, uv).r;
+	z = z * 2.0 - 1.0;
+	vec4 clipSpacePos = vec4(uv * 2.0 - 1.0, z, 1.0);
+	vec4 viewPos = invProj * clipSpacePos;
+	viewPos = vec4(viewPos.xyz / viewPos.w, 1.0);
+
+	return viewPos.xyz;
+}
+
+
 
 void main(){
 	uint index = gl_GlobalInvocationID.x;
@@ -31,14 +56,74 @@ void main(){
 	vec4 dir = directions[index];
 	vec4 color = colors[index];
 	vec4 vel = velocities[index];
-	
-	pos = pos + (vel * dir * delta) + (0.5f * 0.2 * delta * delta);
-	vel = vel + 0.2f * delta; // 0.2 is accleration.
-	color = colors[index];
-	barrier();
 
+	vec2 candy = vec2(pos.a, vel.a); 
+	
+	
+	if(candy.x < 0) {
+		pos.xyz = spawnPos;
+		vel.xyz = vec3(0);
+		candy.x = candy.y;
+	}
+
+	vec4 viewPos = v * vec4(vec3(pos.xyz), 1);
+	vec4 clipPos = p * viewPos;
+
+	vec2 proj0 = clipPos.xy / clipPos.w * 0.5 + 0.5;
+
+	vec3 bufferDepth = viewSpacePoint(proj0);
+	
+
+	if(proj0.x > 0.0 && proj0.x < 1.0 && proj0.y > 0.0 && proj0.y < 1.0 && bufferDepth.z < -1e-2 && bufferDepth.z > viewPos.z && bufferDepth.z < (viewPos.z + 0.1)) {
+		vec2 eps = vec2(1.0) / textureSize(depth, 0).xy;
+		
+		vec2 proj1 = proj0 + vec2(eps.x, 0.0);
+		vec2 proj2 = proj0 + vec2(0.0, eps.y);
+
+		vec3 p0 = viewSpacePoint(proj0);
+		vec3 p1 = viewSpacePoint(proj1);
+		vec3 p2 = viewSpacePoint(proj2);
+		
+		mat4 invV = inverse(v);
+		vec3 n = mat3(invV) * normalize(cross(p1.xyz - p0.xyz, p2.xyz - p0.xyz));
+		vec3 r = reflect(vel.xyz, n);
+
+		pos += vec4(n, 1) * 0.01;
+		vel = vec4(r, 1) * 0.3 + cos(pos * 1e5) * 5e-4;
+	}
+	vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
+	pos += vel * delta;
+
+	color = colors[index];
+
+	candy.x -= 1.0f * delta;
+	pos.a = candy.x;
+	vel.a = candy.y;
+
+	barrier();
 	positions[index] = pos;
 	directions[index] = dir;
 	colors[index] = color;
 	velocities[index] = vel;
 }
+
+
+
+
+
+
+//// weird lösning below
+	//vel = vel + 0.2f;// * delta; // 0.2 is accleration.
+	//vec3 nextPos = (pos + (vel / 6 * dir * delta)).xyz;
+	//
+	//vec4 vpPos = p * v * vec4(nextPos, 1);
+	//vec2 uv = vpPos.xy / vpPos.w * 0.5 + 0.5;
+	//float bufferDepth = getDepth(uv);
+	//float particleDepth = vpPos.z / vpPos.w;
+	//
+	//if(particleDepth > bufferDepth) {
+	//	dir = vec4(0);
+	//}
+	//
+	//pos = vec4(nextPos, 1);
+	////pos = pos + (vel * dir * delta) + (0.5f * 0.2 * delta * delta);

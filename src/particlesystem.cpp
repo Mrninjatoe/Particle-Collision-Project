@@ -11,10 +11,11 @@ ParticleSystem::ParticleSystem() {
 	std::vector<glm::vec4> velocities;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(0, 0, 0, 0));
-		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), 0));
-		velocities.push_back(glm::vec4(0));
-		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.2f, 0.5f))));
+		positions.push_back(p.pos = glm::vec4(0, 10, 0, _fRand(5, 20)));
+		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), 0));
+		//velocities.push_back(glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), p.pos.a));
+		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
+		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.025 /*_fRand(0.2f, 0.5f)*/)));
 		_particles.push_back(p);
 	}
 
@@ -40,14 +41,14 @@ ParticleSystem::~ParticleSystem() {
 }
 
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
-	shader->useProgram();
-	shader->setValue(6, delta);
-	shader->setValue(7, glm::vec3(0));
+	//shader->useProgram();
+	shader->setValue(6, 0.01f);
+	shader->setValue(7, glm::vec3(-5, 10, 5));
 	for (int i = 0; i < _ssbos.size(); i++) {
 		_ssbos[i]->bindBase(i);
 	}
+	//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void ParticleSystem::_setupBuffers() {
