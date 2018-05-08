@@ -123,11 +123,13 @@ void Octree::renderOctree(ShaderProgram* shader, Octree* current, Mesh* box) {
 		
 	}
 	if (current->treeBuilt) {
-		shader->setValue(1, (current->region->max + current->region->min) * 0.5f);
-		shader->setValue(2, glm::scale(current->region->max - current->region->min));
-		shader->setValue(9, color);
-		glLineWidth(4 - current->depth);
-		glDrawElements(GL_TRIANGLES, box->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+		if (current->isLeaf) {
+			shader->setValue(1, (current->region->max + current->region->min) * 0.5f);
+			shader->setValue(2, glm::scale(current->region->max - current->region->min));
+			shader->setValue(9, color);
+			glLineWidth(4 - current->depth);
+			glDrawElements(GL_TRIANGLES, box->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+		}
 		for (int i = 0; i < 8; i++)
 			if(!current->isLeaf)
 				renderOctree(shader, current->children[i], box);

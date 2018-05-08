@@ -63,7 +63,7 @@ GLRenderer::~GLRenderer() {
 void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	// Refactor render data into a class so it acts like a renderpass with clear color, color/depth buffer bit etc... 
 	glViewport(0, 0, window->getWidth(), window->getHeight());
-	glClearColor(0, 0, 0, 1.0f);
+	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(_fullscreenQuad->getVAO());
 	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
@@ -91,6 +91,7 @@ void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::v
 	glClear(GL_NONE);
 	//glEnable(GL_BLEND);
 	glBindVertexArray(_emptyVAO);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	glDrawArraysInstanced(GL_POINTS, 0, 1, particles.size());
 	glBindVertexArray(0);
 	//glDisable(GL_BLEND);

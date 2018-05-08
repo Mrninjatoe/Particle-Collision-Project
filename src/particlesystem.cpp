@@ -2,18 +2,19 @@
 #define NUMBER_OF_EMITTERS 1
 
 ParticleSystem::ParticleSystem(ParticleMethod type) {
-	_nrOfParticles = 1024;
+	//_nrOfParticles = 1024;
+	_nrOfParticles = 65536;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		float spawnHP = _fRand(5.f, 10.f);
-		positions.push_back(p.pos = glm::vec4(0, 5, 0, spawnHP));
-		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), 1, _fRand(-1, 1), spawnHP));
-		colors.push_back(p.color = (glm::vec4(_fRand(0, 1), _fRand(0, 1), _fRand(0, 1), _fRand(0.01f, 0.1f))));
-		velocities.push_back(glm::vec4(0));
+		positions.push_back(p.pos = glm::vec4(0, 10, 0, _fRand(5, 20)));
+		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), 0));
+		//velocities.push_back(glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), p.pos.a));
+		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
+		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.025 /*_fRand(0.2f, 0.5f)*/)));
 		_particles.push_back(p);
 	}
 
@@ -39,18 +40,22 @@ ParticleSystem::~ParticleSystem() {
 }
 
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
-	shader->useProgram();
-	shader->setValue(6, delta);
-	shader->setValue(7, glm::vec3(0, 2, 0));
+	shader->setValue(6, 0.01f);
+	shader->setValue(7, glm::vec3(1, 10, 1));
 	switch (_collisionMethod) {
 	case Octree3DCollision:
 		for (int i = 0; i < _ssbos.size(); i++) {
 			_ssbos[i]->bindBase(i);
 		}
 		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
-		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
 	case ScreeSpaceParticleCollision:
+		for (int i = 0; i < _ssbos.size(); i++) {
+			_ssbos[i]->bindBase(i);
+		}
+		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
+		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
 	}
 }

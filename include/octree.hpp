@@ -23,7 +23,7 @@ struct Octree {
 	int isLeaf = 0;
 
 
-	const float minSize = 0.5f; // 1x1x1 cube.
+	const float minSize = 0.1f; // 1x1x1 cube.
 	bool treeBuilt = false;
 	int id = -1;
 
