@@ -59,7 +59,6 @@ void main(){
 
 	vec2 candy = vec2(pos.a, vel.a); 
 	
-	
 	if(candy.x < 0) {
 		pos.xyz = spawnPos;
 		vel.xyz = vec3(0);
@@ -94,6 +93,7 @@ void main(){
 	vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
 	pos += vel * delta;
 
+
 	color = colors[index];
 
 	candy.x -= 1.0f * delta;
@@ -101,6 +101,7 @@ void main(){
 	vel.a = candy.y;
 
 	barrier();
+
 	positions[index] = pos;
 	directions[index] = dir;
 	colors[index] = color;

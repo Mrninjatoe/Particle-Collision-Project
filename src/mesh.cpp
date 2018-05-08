@@ -7,6 +7,16 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices) {
 	_setupAttributes();
 }
 
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max) {
+	_vertices = vertices;
+	_indices = indices;
+	_min = min;
+	_max = max;
+	_setupBuffers();
+	_setupAttributes();
+}
+
+
 Mesh::~Mesh() {
 	glDeleteBuffers(1, &_ibo);
 	glDeleteBuffers(1, &_vbo);

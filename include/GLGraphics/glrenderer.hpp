@@ -6,6 +6,7 @@
 #include "mesh.hpp"
 #include "shaderprogram.hpp"
 #include "particlesystem.hpp"
+#include "octree.hpp"
 
 class GLRenderer {
 public:
@@ -15,6 +16,7 @@ public:
 	void render(Window* window, std::vector<Model>& models, ShaderProgram* shader);
 	//void renderParticles(Window* window, ShaderProgram* shader, std::vector<ParticleSystem::Emitter> emitters);
 	void renderParticles(Window* window, ShaderProgram* shader, std::vector<ParticleSystem::Particle>& particles);
+	void renderOctree(Window* window, ShaderProgram* shader, Octree* octree);
 	static void APIENTRY openglCallbackFunction(
 		GLenum source,
 		GLenum type,
@@ -37,5 +39,6 @@ public:
 private:
 	SDL_GLContext _context;
 	Mesh* _fullscreenQuad;
+	Mesh* _octreeBox;
 	GLuint _emptyVAO;
 };

@@ -1,10 +1,8 @@
 #include "particlesystem.hpp"
 #define NUMBER_OF_EMITTERS 1
 
-
-
 ParticleSystem::ParticleSystem() {
-	_nrOfParticles = 768;
+	_nrOfParticles = 1024;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
@@ -44,6 +42,7 @@ void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	//shader->useProgram();
 	shader->setValue(6, 0.01f);
 	shader->setValue(7, glm::vec3(-5, 10, 5));
+
 	for (int i = 0; i < _ssbos.size(); i++) {
 		_ssbos[i]->bindBase(i);
 	}

@@ -26,7 +26,7 @@ void main(void){
 		v[2][1]
 	);
 	
-	vec3 point = vPos[0].xyz;
+	vec3 point = vPos[0];
 
 	// Vertex A of the billboarded quad.
 	vec3 vertA = point - (right + up) * vColor[0].a;

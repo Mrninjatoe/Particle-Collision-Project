@@ -3,6 +3,7 @@
 #include "engine.hpp"
 #include <ImGui/imgui.h>
 #include <ImGui/imgui_impl_sdl_gl3.h>
+#include <glm/gtx/transform.hpp>
 
 GLRenderer::GLRenderer(SDL_Window* window) {
 	// Request an OpenGL 4.6 context (should be core)
@@ -49,7 +50,7 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	glDisable(GL_CULL_FACE);
 
 	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
-
+	_octreeBox = Engine::getInstance()->getMeshLoader()->loadMesh("assets/models/box.fbx").meshes[0];
 	glGenVertexArrays(1, &_emptyVAO);
 	glBindVertexArray(0);
 }
@@ -87,9 +88,24 @@ void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::v
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0.1, 0.1, 0.1, 1.0f);
 	glClear(GL_NONE);
-
+	//glEnable(GL_BLEND);
 	glBindVertexArray(_emptyVAO);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 	glDrawArraysInstanced(GL_POINTS, 0, 1, particles.size());
 	glBindVertexArray(0);
+	//glDisable(GL_BLEND);
+}
+
+void GLRenderer::renderOctree(Window* window, ShaderProgram* shader, Octree* octree) {
+	glViewport(0, 0, window->getWidth(), window->getHeight());
+	glClearColor(0, 0, 0, 1.0f);
+	glClear(GL_NONE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glBindVertexArray(_octreeBox->getVAO());
+	// ugly fix 
+	octree->renderOctree(shader, octree, _octreeBox);
+	glBindVertexArray(0);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

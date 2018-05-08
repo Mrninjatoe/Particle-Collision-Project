@@ -17,6 +17,10 @@ MeshLoader::~MeshLoader() {
 Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Mesh::Vertex> vertices;
 	std::vector<unsigned short> indices;
+	float xMin = 0, yMin = 0, zMin = 0,
+		xMax = 0, yMax = 0, zMax = 0;
+	glm::vec3 min = glm::vec3(0);
+	glm::vec3 max = glm::vec3(0);
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		Mesh::Vertex vertex;
 		glm::vec3 tempV;
@@ -25,6 +29,8 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		tempV.y = mesh->mVertices[i].y;
 		tempV.z = mesh->mVertices[i].z;
 		vertex.pos = tempV;
+		min = glm::min(min, vertex.pos);
+		max = glm::max(max, vertex.pos);
 
 		tempV.x = mesh->mNormals[i].x;
 		tempV.y = mesh->mNormals[i].y;
@@ -48,18 +54,24 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vertices.push_back(vertex);
 	}
 
+
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
-	return new Mesh(vertices, indices);
+
+	return new Mesh(vertices, indices, min, max);
 }
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
+	printf("NumMeshes in aiScene: %u\n", scene->mNumMeshes);
 	for (unsigned int i = 0; i < node->mNumMeshes;i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		models.meshes.push_back(processMesh(mesh, scene));
+
+		models.boundingBox.min = glm::min(models.boundingBox.min, models.meshes.back()->getMin());
+		models.boundingBox.max = glm::max(models.boundingBox.max, models.meshes.back()->getMax());
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -75,6 +87,8 @@ Model MeshLoader::loadMesh(const char* path) {
 		printf("ERROR::ASSIMP::", aiGetErrorString());
 
 	Model model;
+	model.boundingBox.min = glm::vec3(0);
+	model.boundingBox.max = glm::vec3(0);
 	processNode(test->mRootNode, test, model);
 
 	return model;
