@@ -22,7 +22,7 @@ public:
 		return _instance;
 	}
 
-	GLRenderer* getRenderer() { return _renderer.get(); };
+	GLRenderer* getRenderer() { return _renderer.get(); }
 	Window* getWindow() { return _screen.get(); }
 	MeshLoader* getMeshLoader() { return _meshLoader.get(); }
 	TextureLoader* getTextureLoader() { return _textureLoader.get(); }
@@ -45,6 +45,7 @@ private:
 	ShaderProgram* _computeShader;
 	ShaderProgram* _octreePass;
 	Octree* _octree;
+	int _nrOfNodes = 0;
 
 	void _init();
 	void _initializeSDL();

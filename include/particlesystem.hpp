@@ -5,10 +5,12 @@
 #include <memory>
 #include "GLGraphics/glshaderstoragebuffer.hpp"
 #include "shaderprogram.hpp"
+#include "octree.hpp"
 
 class ParticleSystem {
 public:
-	ParticleSystem();
+	const static enum ParticleMethod : int { Octree3DCollision = 0, ScreeSpaceParticleCollision = 1 };
+	ParticleSystem(ParticleMethod type = Octree3DCollision);
 	~ParticleSystem();
 
 	const static enum ParticleBindingLocation : const int {
@@ -17,6 +19,7 @@ public:
 		color = 2,
 		velocities = 3
 	};
+
 
 	struct Particle {
 		glm::vec4 pos;
@@ -34,12 +37,15 @@ public:
 	std::vector<ShaderStorageBuffer*>& getSSBuffers() { return _ssbos; }
 	std::vector<Particle>& getParticles() { return _particles; }
 	void update(float delta, ShaderProgram* shader);
+	void fixOctreeBuffers(Octree* octree);
+	ParticleMethod getMethod();
 
 private:
 	std::vector<Emitter> _emitters;
 	std::vector<Particle> _particles;
 	std::vector<ShaderStorageBuffer*> _ssbos;
 	int _nrOfParticles;
+	ParticleMethod _collisionMethod;
 
 	void _setupBuffers();
 	void _setupAttributes(Emitter& e);

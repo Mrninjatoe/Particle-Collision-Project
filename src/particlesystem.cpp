@@ -1,7 +1,7 @@
 #include "particlesystem.hpp"
 #define NUMBER_OF_EMITTERS 1
 
-ParticleSystem::ParticleSystem() {
+ParticleSystem::ParticleSystem(ParticleMethod type) {
 	_nrOfParticles = 1024;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
@@ -28,7 +28,7 @@ ParticleSystem::ParticleSystem() {
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
-	//_setupBuffers();
+																			//_setupBuffers();
 }
 
 ParticleSystem::~ParticleSystem() {
@@ -42,13 +42,22 @@ void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	shader->useProgram();
 	shader->setValue(6, delta);
 	shader->setValue(7, glm::vec3(0, 2, 0));
-	for (int i = 0; i < _ssbos.size(); i++) {
-		_ssbos[i]->bindBase(i);
+	switch (_collisionMethod) {
+	case Octree3DCollision:
+		for (int i = 0; i < _ssbos.size(); i++) {
+			_ssbos[i]->bindBase(i);
+		}
+		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		break;
+	case ScreeSpaceParticleCollision:
+		break;
 	}
-	glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
+void ParticleSystem::fixOctreeBuffers(Octree* octree) {
+		
+}
 void ParticleSystem::_setupBuffers() {
 	/*for (int i = 0; i < _emitters.size(); i++) {
 		glGenVertexArrays(1, &_emitters[i].vao);

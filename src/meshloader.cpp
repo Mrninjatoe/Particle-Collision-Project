@@ -17,8 +17,7 @@ MeshLoader::~MeshLoader() {
 Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Mesh::Vertex> vertices;
 	std::vector<unsigned short> indices;
-	float xMin = 0, yMin = 0, zMin = 0,
-		xMax = 0, yMax = 0, zMax = 0;
+
 	glm::vec3 min = glm::vec3(0);
 	glm::vec3 max = glm::vec3(0);
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -54,14 +53,13 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vertices.push_back(vertex);
 	}
 
-
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
 
-	return new Mesh(vertices, indices, min, max);
+	return new Mesh(vertices, indices, min, max, true);
 }
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
@@ -79,7 +77,7 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) 
 	}
 }
 
-Model MeshLoader::loadMesh(const char* path) {
+Model MeshLoader::loadMesh(const char* path, bool hasModelMX) {
 	// For models without normals we need aiProcess_GenNormals. Should always have them with .fbx though.
 	const aiScene* test = aiImportFile(path, aiProcess_PreTransformVertices | aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -102,5 +100,5 @@ Mesh* MeshLoader::getQuad() {
 		Mesh::Vertex{ { -1, -1, 0 },{ 0, 0, -1 },{ 1, 0, 1 },{ 0, 0 }}
 	};
 	std::vector<unsigned short> indices{ 0, 2, 1, 2, 0, 3 };
-	return new Mesh(vertices, indices);
+	return new Mesh(vertices, indices, false);
 };

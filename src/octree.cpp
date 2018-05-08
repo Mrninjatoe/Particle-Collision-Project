@@ -1,12 +1,13 @@
 #include "octree.hpp"
 #include <glad/glad.h>
 #include <glm/gtx/transform.hpp>
-Octree::Octree(Box* region, std::vector<Mesh*>& objects, int id) {
+Octree::Octree(Box* region, std::vector<Model> objects, int id, int depth) {
 	this->region = region;
-	for (auto mesh : objects) {
-		this->objects.push_back(mesh);
+	for (auto model : objects) {
+		this->objects.push_back(model);
 	}
 	this->id = id;
+	this->depth = depth;
 	buildTree();
 }
 
@@ -20,10 +21,14 @@ Octree::~Octree() {
 
 void Octree::buildTree() {
 	// are there any more objects to contain?
-	if (objects.size() < 1) {
-		printf("Can't place any here\n", objects.size());
+	
+	if (objects.size() < 0) {
+		printf("Can't place any here.\n", objects.size());
 		return;
 	}
+	
+	if (depth == 4)
+		return;
 
 	glm::vec3 dimensions = region->max - region->min;
 	if (dimensions == glm::vec3(0)) {
@@ -31,7 +36,7 @@ void Octree::buildTree() {
 	}
 	// check if the dimensions are smaller than the pre-defined minimum size of the box
 	if (dimensions.x <= minSize && dimensions.y <= minSize && dimensions.z <= minSize) {
-		printf("Dimensions too small.");
+		printf("Dimensions too small.\n");
 		return;
 	}
 	glm::vec3 half = dimensions * 0.5f;
@@ -47,78 +52,97 @@ void Octree::buildTree() {
 	octant[6] = Box(center, region->max);
 	octant[7] = Box(glm::vec3(region->min.x, center.y, center.z), glm::vec3(center.x, region->max.y, region->max.z));
 
-	std::vector<std::vector<Mesh*>> octLists;
+	std::vector<std::vector<Model>> octLists;
 	octLists.resize(8);
-	std::vector<Mesh*> delist;
+	std::vector<Model> delist;
 
-	//printf("NrOfMeshes:%zu\n", objects.size());
-	//for (auto mesh : objects) {
-	//	printf("Min: (%f, %f, %f)\nMax: (%f, %f, %f)\n", mesh->getMin().x, mesh->getMin().y, mesh->getMin().z,
-	//		mesh->getMax().x, mesh->getMax().y, mesh->getMax().z);
-	//	printf("\n");
-	//}
-	//printf("\n\n");
+	for (auto model : objects) {
+		for (auto mesh : model.meshes) {
+			glm::vec3 meshMin = mesh->getMin();
+			glm::vec3 meshMax = mesh->getMax();
+			if (meshMin != meshMax); {
+				for (int i = 0; i < 8; i++) {
+					if (octant[i].min.x <= meshMax.x && octant[i].max.x >= meshMin.x &&
+						octant[i].min.y <= meshMax.y && octant[i].max.y >= meshMin.y &&
+						octant[i].min.z <= meshMax.z && octant[i].max.z >= meshMin.z) {
+						Model newmod;
+						newmod.boundingBox = model.boundingBox;
+						newmod.model = model.model;
+						newmod.meshes.push_back(mesh);
 
-
-	for (auto mesh : objects) {
-		glm::vec3 meshMin = mesh->getMin();
-		glm::vec3 meshMax = mesh->getMax();
-		printf("%f,%f,%f\n", meshMin.x, meshMin.y, meshMin.z);
-		printf("%f,%f,%f\n\n", meshMax.x, meshMax.y, meshMax.z);
-		if (meshMin != meshMax); {
-			for (int i = 0; i < 8; i++) {
-				if (octant[i].min.x <= meshMax.x && octant[i].max.x >= meshMin.x &&
-					octant[i].min.y <= meshMax.y && octant[i].max.y >= meshMin.y &&
-					octant[i].min.z <= meshMax.z && octant[i].max.z >= meshMin.z) {
-					octLists[i].push_back(mesh);
-					delist.push_back(mesh);
-					break;
+						octLists[i].push_back(newmod);
+						delist.push_back(newmod);
+						//break;
+					}
 				}
 			}
 		}
 	}
+	//printf("Done adding to children\n\n");
 
-	for (auto mesh : delist) {
+	//printf("Before: %zu\n", objects.size());
+	for (auto& model : delist) {
 		objects.erase(std::remove_if(
 			objects.begin(), objects.end(),
-			[mesh](Mesh* m) {
-			return m == mesh;
+			[model](const Model& m) {
+			return m.boundingBox.max == model.boundingBox.max;
 		}), objects.end());
 	}
-
+	//printf("After: %zu\n\n", objects.size());
 
 	for (int i = 0; i < 8; i++) {
 		if (octLists[i].size() != 0) {
-			//printf("%u\n", i);
-			children[i] = new Octree(&octant[i], octLists[i], id + 1);
+			children[i] = new Octree(&octant[i], octLists[i], id + 1, depth + 1);
 		}
 		else
-			children[i] = nullptr;
+			isLeaf = 1;
 	}
 	treeBuilt = true;
-	printf("%i\n", id);
+	//printf("Tree id: %i\n", id);
+	printf("Depth: %i\n", depth);
 }
 
 void Octree::renderOctree(ShaderProgram* shader, Octree* current, Mesh* box) {
+	glm::vec4 color;
+	switch (current->depth) {
+	case 0:
+		color = {1,1,1,0};
+		break;
+	case 1:
+		color = {1,0,0,0 };
+		break;
+	case 2:
+		color = { 0,1,0,0 };
+		break;
+	case 3:
+		color = { 0,0,1,0 };
+		break;
+	case 4:
+		color = { 0,1,1,0 };
+		break;
+		
+	}
 	if (current->treeBuilt) {
+		shader->setValue(1, (current->region->max + current->region->min) * 0.5f);
+		shader->setValue(2, glm::scale(current->region->max - current->region->min));
+		shader->setValue(9, color);
+		glLineWidth(4 - current->depth);
+		glDrawElements(GL_TRIANGLES, box->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+		for (int i = 0; i < 8; i++)
+			if(!current->isLeaf)
+				renderOctree(shader, current->children[i], box);
+	}
+}
+
+void Octree::getNrOfNodes(Octree* curr, int& count) {
+	if (curr->treeBuilt) {
 		for (int i = 0; i < 8; i++) {
-				shader->setValue(1, (current->region->max + current->region->min) * 0.5f);
-				shader->setValue(2, glm::scale(current->region->max - current->region->min));
-				shader->setValue(9, glm::vec4(current->region->max / (float)i, 0));
-				glDrawElements(GL_TRIANGLES, box->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-				if(current->children[i] != nullptr)
-					renderOctree(shader, current->children[i], box);
+			if (curr->isLeaf) {
+				count++;
+				return;
+			}
+			else
+				getNrOfNodes(curr->children[i], count);
 		}
 	}
-
-	/*shader->setValue(1, (octree->region->max + octree->region->min) * 0.5f);
-	shader->setValue(2, glm::scale(octree->region->max - octree->region->min));
-	shader->setValue(9, glm::vec4(octree->region->max, 0));
-	glDrawElements(GL_TRIANGLES, _octreeBox->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-	for (auto octan : octree->children) {
-		shader->setValue(1, (octan->region->max + octan->region->min) * 0.5f);
-		shader->setValue(2, glm::scale(octan->region->max - octan->region->min));
-		shader->setValue(9, glm::vec4(octan->region->max, 0));
-		glDrawElements(GL_TRIANGLES, _octreeBox->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
-	}*/
 }

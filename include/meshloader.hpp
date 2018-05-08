@@ -12,7 +12,7 @@ public:
 	~MeshLoader();
 	Mesh* processMesh(aiMesh* mesh, const aiScene* scene);
 	void processNode(aiNode* node, const aiScene* scene, Model& models);
-	Model loadMesh(const char* path);
+	Model loadMesh(const char* path, bool hasModelMX);
 	Mesh* getQuad();
 private:
 

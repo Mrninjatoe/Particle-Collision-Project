@@ -15,10 +15,6 @@ Engine::Engine() {
 int Engine::run() {
 	_init();
 
-	
-
-	
-
 	bool show_demo_window = true;
 	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -112,11 +108,9 @@ int Engine::run() {
 		}
 		ImGui_ImplSdlGL3_NewFrame(_screen->getView());
 		_camera.update(deltaTime);
-		glm::mat4 bog = glm::translate(glm::vec3(0, 0, 0));
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
-			_geometryPass->setValue(0, bog);
 			_geometryPass->setValue(1, _camera.getView());
 			_geometryPass->setValue(2, _camera.getProj());
 			_geometryPass->setValue(22, 0);
@@ -142,21 +136,21 @@ int Engine::run() {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
 		}
-
-		//_particleSystem->update(deltaTime, _computeShader);
-		//{ // Particle pass.
-		//	auto ssbos = _particleSystem->getSSBuffers();
-		//	_particlePass->useProgram();
-		//	_particlePass->setValue(6, _camera.getView());
-		//	_particlePass->setValue(7, _camera.getProj());
-		//	_particlePass->setValue(20, 0);
-		//	_testTexture->bind(0);
-		//	for (int i = 0; i < ssbos.size(); i++) {
-		//		//ssbos[i]->bindBase(i);
-		//	}
-		//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//	_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
-		//}
+		
+			_particleSystem->update(deltaTime, _computeShader);
+		{ // Particle pass.
+			auto ssbos = _particleSystem->getSSBuffers();
+			_particlePass->useProgram();
+			_particlePass->setValue(6, _camera.getView());
+			_particlePass->setValue(7, _camera.getProj());
+			_particlePass->setValue(20, 0);
+			_testTexture->bind(0);
+			for (int i = 0; i < ssbos.size(); i++) {
+				//ssbos[i]->bindBase(i);
+			}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		}
 
 		{ // Octree renderer.
 			_octreePass->useProgram();
@@ -262,17 +256,46 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
-	_models.push_back(_meshLoader->loadMesh("assets/models/test_scene.fbx"));
-	_particleSystem = new ParticleSystem();
+	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(2.5, 0, 0), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(2.5, 0, 2.5), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 2.5), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6));
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision);
 	_camera.position = glm::vec3(0, 0, 0);
 
+	
 	glm::vec3 min = glm::vec3(0);
 	glm::vec3 max = glm::vec3(0);
 	for (auto model : _models) {
+		for (auto mesh : model.meshes) {
+			mesh->setMin(model.model * glm::vec4(mesh->getMin(), 1));
+			mesh->setMax(model.model * glm::vec4(mesh->getMax(), 1));
+		}
+		model.boundingBox.min = glm::vec3(model.model * glm::vec4(model.boundingBox.min, 1));
+		model.boundingBox.max = glm::vec3(model.model * glm::vec4(model.boundingBox.max, 1));
 		min = glm::min(min, model.boundingBox.min);
 		max = glm::max(max, model.boundingBox.max);
 	}
+
+	std::vector<glm::vec3> centers;
+	centers.resize(_models.size());
+	//glm::vec3 furCenter;
+	//glm::vec3 closeCenter;
+	//for (int i = 0; i < _models.size(); i++) {
+	//	glm::vec3 dimensions = _models[i].boundingBox.max - _models[i].boundingBox.min;
+	//	centers[i] = _models[i].boundingBox.min + (dimensions * 0.5f);
+	//	glm::length(centers[i]);
+	//}
+
 	printf("NUMBER OF MODELS: %zu\n", _models.size());
-	printf("NUMBER OF MESHES: %zu\n", _models[0].meshes.size());
-	_octree = new Octree(new Box(min, max), _models[0].meshes, 0);
+	//_octree = new Octree(new Box(glm::vec3(-5, 0, -5), glm::vec3(5, 5, 5)), _models, 0, 0);
+	_octree = new Octree(new Box(min, max), _models, 0, 0);
+	_octree->getNrOfNodes(_octree, _nrOfNodes);
+	printf("%i\n", _nrOfNodes);
 }

@@ -50,7 +50,7 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	glDisable(GL_CULL_FACE);
 
 	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
-	_octreeBox = Engine::getInstance()->getMeshLoader()->loadMesh("assets/models/box.fbx").meshes[0];
+	_octreeBox = Engine::getInstance()->getMeshLoader()->loadMesh("assets/models/box.fbx", false).meshes[0];
 	glGenVertexArrays(1, &_emptyVAO);
 	glBindVertexArray(0);
 }
@@ -76,6 +76,7 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	for (auto model : models) {
+		shader->setValue(0, model.model);
 		for (auto mesh : model.meshes) {
 			glBindVertexArray(mesh->getVAO());
 			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);

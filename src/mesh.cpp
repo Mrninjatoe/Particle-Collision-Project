@@ -1,17 +1,19 @@
 #include "mesh.hpp"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices) {
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, bool hasMX) {
 	_vertices = vertices;
 	_indices = indices;
+	_hasModelMX = hasMX;
 	_setupBuffers();
 	_setupAttributes();
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max) {
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX) {
 	_vertices = vertices;
 	_indices = indices;
 	_min = min;
 	_max = max;
+	_hasModelMX = hasMX;
 	_setupBuffers();
 	_setupAttributes();
 }
