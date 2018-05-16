@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 in vec3 vPos;
 in vec3 vNormal;
@@ -21,6 +21,8 @@ void main(){
 	float z_b = texture(depth, vUV.xy).x;
 	float z_n = 2.0 * z_b - 1.0;
     float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+	float test = (2.0 * zNear) / (zFar + zNear - z_b * (zFar - zNear));
+   
 
 	//fragColor = vec4(1) * z_b;
 	//fragColor = vec4(normal, 1) * z_e;

@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 layout (std430, binding = 0) buffer PositionBuffer {
 	vec4 positions[];

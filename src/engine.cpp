@@ -127,6 +127,14 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _models, _geometryPass);
 		}
 
+		{ // Reflection pass
+			_reflectionPass->useProgram();
+			_reflectionPass->setValue(1, _camera.getReflectedView());
+			_reflectionPass->setValue(2, _camera.getProj());
+			_reflectedFBO->bind();
+			_renderer->render(_screen.get(), _models, _reflectionPass);
+		}
+
 		{ // Lighting pass to reconstruct scene.
 			_lightingPass->useProgram();
 			_lightingPass->setValue(20, 0);
@@ -143,16 +151,30 @@ int Engine::run() {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
 		}
-
+		
 		_computeShader->useProgram();
-		_computeShader->setValue(5, _camera.position);
-		_computeShader->setValue(15, _triangleCount);
-		_computeShader->setValue(16, _nrOfNodes);
-		_computeShader->setValue(17, 5);
-		//_computeShader->setValue(8, _camera.getView());
-		//_computeShader->setValue(9, _camera.getProj());
-		//_computeShader->setValue(20, 0);
-		//_deferredFBO->bindDepth(0);
+		switch (_particleSystem->getMethod()) {
+		case ParticleSystem::Octree3DCollision: {
+			_computeShader->setValue(15, _triangleCount);
+			_computeShader->setValue(16, _nrOfNodes);
+			_computeShader->setValue(17, 5);
+			break;
+			}
+		case ParticleSystem::ScreeSpaceParticleCollision: {
+			_computeShader->setValue(8, _camera.getView());
+			_computeShader->setValue(9, _camera.getProj());
+			_computeShader->setValue(10, _camera.getReflectedView());
+			_computeShader->setValue(20, 0);
+			_computeShader->setValue(21, 1);
+			_computeShader->setValue(22, 2);
+			_computeShader->setValue(23, 3);
+			_deferredFBO->bindDepth(0);
+			(*_deferredFBO)[1]->bind(1);
+			_reflectedFBO->bindDepth(2);
+			(*_reflectedFBO)[0]->bind(3);
+			break;
+			}
+		}
 		_particleSystem->update(deltaTime, _computeShader);
 		{ // Particle pass.
 			auto ssbos = _particleSystem->getSSBuffers();
@@ -168,12 +190,13 @@ int Engine::run() {
 			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
 		}
 
-		{ // Octree renderer.
-			_octreePass->useProgram();
-			_octreePass->setValue(6, _camera.getView());
-			_octreePass->setValue(7, _camera.getProj());
-			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
-		}
+		// Uncomment when screen-space.
+		//{ // Octree renderer.
+		//	_octreePass->useProgram();
+		//	_octreePass->setValue(6, _camera.getView());
+		//	_octreePass->setValue(7, _camera.getProj());
+		//	_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+		//}
 
 		{
 			//GLint total_mem_kb = 0;
@@ -257,14 +280,23 @@ void Engine::_init() {
 	_geometryPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/geometryPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/geometryPass.frag")
 		.finalize();
+
+	_reflectionPass = new ShaderProgram("Reflection Pass");
+	_reflectionPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/reflectionPass.vert")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/reflectionPass.frag")
+		.finalize();
 	
 	_lightingPass = new ShaderProgram("Lighting Pass");
 	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
+	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
+	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
+	//	.finalize();
+
 	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
 		.finalize();
 
 	_particlePass = new ShaderProgram("Particle Pass");
@@ -298,6 +330,12 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
+	_reflectedFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
+	_reflectedFBO->bind()
+		.addTexture(0, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
+		.addDepth(1, _screen->getWidth(), _screen->getHeight())
+		.finalize();
+
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
 	/*_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
@@ -335,12 +373,13 @@ void Engine::_initWorld() {
 	}
 
 	//printf("NUMBER OF MODELS: %zu\n", _models.size());
-	//_octree = new Octree(Box(glm::vec3(-5, 0, -5), glm::vec3(5, 5, 5)), _models, 0, 0);
-	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-	_octree->getNrOfNodes(_octree, _nrOfNodes);
+	//_octree = new Octree(Box(min, max), allTriangles, 0, 0);
+	//_octree->getNrOfNodes(_octree, _nrOfNodes);
 	//printf("%i\n\n", _nrOfNodes);
 	
 	
-	_triangleCount = allTriangles.size();
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	//_triangleCount = allTriangles.size();
+	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }

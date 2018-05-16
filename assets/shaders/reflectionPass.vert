@@ -10,9 +10,6 @@ out vec3 vNormal;
 out vec3 vColor;
 out vec2 vUV;
 
-//layout (location = 0) uniform mat4 p;
-//layout (location = 1) uniform mat4 v;
-//layout (location = 2) uniform mat4 m;
 layout(location = 0) uniform mat4 m;
 layout(location = 1) uniform mat4 v;
 layout(location = 2) uniform mat4 p;

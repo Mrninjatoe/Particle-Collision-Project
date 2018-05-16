@@ -136,7 +136,6 @@ void Octree::getNodes(Octree* curr, std::vector<Node>& nodes) {
 	Node temp;
 	temp.info.x = curr->triangleIDs.size();
 	temp.info.y = curr->trisIndices.size();
-//	printf("%i\n", curr->isLeaf);
 	temp.info.z = curr->isLeaf;
 	temp.info.w = curr->depth;
 	temp.region = curr->region;
@@ -147,7 +146,6 @@ void Octree::getNodes(Octree* curr, std::vector<Node>& nodes) {
 	
 	for (int i = 0; i < curr->triangleIDs.size(); i++) {
 		temp.triangleRefs[i].x = curr->triangleIDs[i];
-		printf("%zu\n", temp.triangleRefs[i].x);
 	}
 	nodes.push_back(temp);
 	for (int i = 0; i < curr->trisIndices.size(); i++) {

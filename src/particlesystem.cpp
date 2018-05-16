@@ -15,22 +15,16 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), 0));
 		//velocities.push_back(glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), p.pos.a));
 		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
-		colors.push_back(p.color = (glm::vec4(1, 0, 0, 1 /*_fRand(0.2f, 0.5f)*/)));
+		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.1f /*_fRand(0.2f, 0.5f)*/)));
 		_particles.push_back(p);
 	}
-
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // Positions
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // Directions
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // color and radius
-	//_ssbos[position]->setData(positions);
-	//_ssbos[direction]->setData(directions);
-	//_ssbos[color]->setData(colors);
 
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
 																			//_setupBuffers();
+	_collisionMethod = type;
 }
 
 ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
@@ -65,6 +59,7 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 	printf("%zu\n", sizeof(Octree::Node) * nodes.size());
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, nodes));
 	//_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, boxes));
+	_collisionMethod = type;
 }
 
 
@@ -77,22 +72,25 @@ ParticleSystem::~ParticleSystem() {
 
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	shader->setValue(6, 0.01f);
-	shader->setValue(7, glm::vec3(0, 5, 0));
 	switch (_collisionMethod) {
-	case Octree3DCollision:
+	case Octree3DCollision: {
+		shader->setValue(7, glm::vec3(0, 5, 0));
 		for (int i = 0; i < _ssbos.size(); i++) {
 			_ssbos[i]->bindBase(i);
 		}
 		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
-	case ScreeSpaceParticleCollision:
+	}
+	case ScreeSpaceParticleCollision: {
+		shader->setValue(7, glm::vec3(0, 5, 0));
 		for (int i = 0; i < _ssbos.size(); i++) {
 			_ssbos[i]->bindBase(i);
 		}
 		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
 		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
+	}
 	}
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }

@@ -10,7 +10,7 @@
 class ParticleSystem {
 public:
 	const static enum ParticleMethod : int { Octree3DCollision = 0, ScreeSpaceParticleCollision = 1 };
-	ParticleSystem(ParticleMethod type = Octree3DCollision);
+	ParticleSystem(ParticleMethod type);
 	ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct);
 	~ParticleSystem();
 
@@ -37,7 +37,7 @@ public:
 	std::vector<Particle>& getParticles() { return _particles; }
 	void update(float delta, ShaderProgram* shader);
 	void fixOctreeBuffers(Octree* octree);
-
+	ParticleMethod getMethod() { return _collisionMethod; }
 private:
 	std::vector<Emitter> _emitters;
 	std::vector<Particle> _particles;

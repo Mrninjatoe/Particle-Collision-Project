@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 in vec4 gColor;
 in vec2 gUV;

@@ -19,7 +19,7 @@ public:
 	bool enableMouse = true;
 	
 	float zNear = 0.1f;
-	float zFar = 50.f;
+	float zFar = 8.f;
 	float pitch;
 	float yaw;
 	float counter = 0.f;
@@ -27,5 +27,6 @@ public:
 	void update(float dt);
 
 	glm::mat4 getView();
+	glm::mat4 getReflectedView();
 	glm::mat4 getProj();
 };
