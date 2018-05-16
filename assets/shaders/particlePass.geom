@@ -30,24 +30,28 @@ void main(void){
 
 	// Vertex A of the billboarded quad.
 	vec3 vertA = point - (right + up) * vColor[0].a;
+	//gPos = vertA;
 	gl_Position = p * v * vec4(vertA, 1.0);
 	gUV = vec2(0.0, 0.0);
 	gColor = vColor[0];
 	EmitVertex();
 
 	vec3 vertB = point - (right - up) * vColor[0].a;
+	//gPos = vertB;
 	gl_Position = p * v * vec4(vertB, 1.0);
 	gUV = vec2(0.0, 1.0);
 	gColor = vColor[0];
 	EmitVertex();
 
 	vec3 vertD = point + (right - up) * vColor[0].a;
+	//gPos = vertD;
 	gl_Position = p * v * vec4(vertD, 1.0);
 	gUV = vec2(1.0, 0.0);	
 	gColor = vColor[0];
 	EmitVertex();
 
 	vec3 vertC = point + (right + up) * vColor[0].a;
+	//gPos = vertC;
 	gl_Position = p * v * vec4(vertC, 1.0);
 	gUV = vec2(1.0, 1.0);
 	gColor = vColor[0];

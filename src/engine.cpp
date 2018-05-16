@@ -177,11 +177,14 @@ int Engine::run() {
 		}
 		_particleSystem->update(deltaTime, _computeShader);
 		{ // Particle pass.
+			glm::mat4 v = _camera.getView();
+			glm::vec3 forward = glm::vec3(v[0][2], v[1][2], v[2][2]);
 			auto ssbos = _particleSystem->getSSBuffers();
 			_particlePass->useProgram();
 			_particlePass->setValue(6, _camera.getView());
 			_particlePass->setValue(7, _camera.getProj());
 			_particlePass->setValue(20, 0);
+			_particlePass->setValue(21, forward);
 			_testTexture->bind(0);
 			for (int i = 0; i < 3; i++) {
 				ssbos[i]->bindBase(i);
@@ -322,7 +325,7 @@ void Engine::_initializeGL() {
 }
 
 void Engine::_initWorld() {
-	_testTexture = _textureLoader->loadTexture("assets/textures/king_vigor.png");
+	_testTexture = _textureLoader->loadTexture("assets/textures/eroth.png");
 	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
 		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
