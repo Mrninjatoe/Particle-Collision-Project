@@ -53,13 +53,28 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		vertices.push_back(vertex);
 	}
 
+	std::vector<Mesh::Triangle> triangles;
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+		Mesh::Triangle temp;
 		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
+		for (unsigned int j = 0; j < face.mNumIndices; j++) {
 			indices.push_back(face.mIndices[j]);
+			temp.verts[j] = glm::vec4(vertices[face.mIndices[j]].pos, 1);
+			//temp.indices[j] = indices.back();
+		}
+		temp.id.x = i;
+		triangles.push_back(temp);
 	}
 
-	return new Mesh(vertices, indices, min, max, true);
+	//for (int i = 0; i < vertices.size() / 3; i += 3) {
+	//	for (int j = 0; j < 3; j++) {
+	//		//temp.verts[j] = vertices[indices[j + i]].pos;
+	//	}
+	//	triangles.push_back(temp);
+	//}
+	//printf("%zu\n", triangles.size());
+
+	return new Mesh(vertices, indices, min, max, true, triangles);
 }
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
@@ -68,8 +83,8 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) 
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		models.meshes.push_back(processMesh(mesh, scene));
 
-		models.boundingBox.min = glm::min(models.boundingBox.min, models.meshes.back()->getMin());
-		models.boundingBox.max = glm::max(models.boundingBox.max, models.meshes.back()->getMax());
+		models.boundingBox.min = glm::min(models.boundingBox.min, glm::vec4(models.meshes.back()->getMin(), 1));
+		models.boundingBox.max = glm::max(models.boundingBox.max, glm::vec4(models.meshes.back()->getMax(), 1));
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
@@ -85,8 +100,8 @@ Model MeshLoader::loadMesh(const char* path, bool hasModelMX) {
 		printf("ERROR::ASSIMP::", aiGetErrorString());
 
 	Model model;
-	model.boundingBox.min = glm::vec3(0);
-	model.boundingBox.max = glm::vec3(0);
+	model.boundingBox.min = glm::vec4(0);
+	model.boundingBox.max = glm::vec4(0);
 	processNode(test->mRootNode, test, model);
 
 	return model;
@@ -102,3 +117,56 @@ Mesh* MeshLoader::getQuad() {
 	std::vector<unsigned short> indices{ 0, 2, 1, 2, 0, 3 };
 	return new Mesh(vertices, indices, false);
 };
+
+Mesh* MeshLoader::getCube() {
+	//std::vector<Mesh::Vertex> vertices{
+	//	Mesh::Vertex{ {-1, 0, -1}, {0,0,0}, {0,0,0}, {0,0}}, // 0
+	//	Mesh::Vertex{ { -1, 1, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { 1, 1, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { 1, 0, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 1, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+
+	//	Mesh::Vertex{ { -1, 0, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } }, // 5
+	//	Mesh::Vertex{ { -1, 1, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 1, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 0, -1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 0, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+
+	//	Mesh::Vertex{ { -1, 0, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 1, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//	Mesh::Vertex{ { -1, 1, 1 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	//};
+	//std::vector<unsigned short> indices{
+	//	0, 1, 2, 3, 4,
+	//	5, 6, 7, 8, 9
+
+	//};
+
+	std::vector<Mesh::Vertex> vertices{
+		Mesh::Vertex{ { -0.5, -0.5, -0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } }, // 0
+		Mesh::Vertex{ { -0.5, 0.5, -0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { 0.5, 0.5, -0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { 0.5, -0.5, -0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { 0.5, -0.5, 0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { 0.5, 0.5, 0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { -0.5, 0.5, 0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+		Mesh::Vertex{ { -0.5, -0.5, 0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
+	};
+
+	std::vector<unsigned short> indices{
+		0, 1, 
+		1, 2, 
+		2, 3,
+		3, 0,
+		3, 4, 
+		4, 5, 
+		5, 2,
+		5, 6,
+		6, 7, 
+		7, 4,
+		7, 0,
+		6, 1
+	};
+
+	return new Mesh(vertices, indices, false);
+}

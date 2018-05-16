@@ -50,7 +50,9 @@ GLRenderer::GLRenderer(SDL_Window* window) {
 	glDisable(GL_CULL_FACE);
 
 	_fullscreenQuad = Engine::getInstance()->getMeshLoader()->getQuad();
-	_octreeBox = Engine::getInstance()->getMeshLoader()->loadMesh("assets/models/box.fbx", false).meshes[0];
+	//_octreeBox = Engine::getInstance()->getMeshLoader()->loadMesh("assets/models/box.fbx", false).meshes[0];
+	_octreeBox = Engine::getInstance()->getMeshLoader()->getCube();
+
 	glGenVertexArrays(1, &_emptyVAO);
 	glBindVertexArray(0);
 }
@@ -101,12 +103,17 @@ void GLRenderer::renderOctree(Window* window, ShaderProgram* shader, Octree* oct
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0, 0, 0, 1.0f);
 	glClear(GL_NONE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
 
 	glBindVertexArray(_octreeBox->getVAO());
 	// ugly fix 
 	octree->renderOctree(shader, octree, _octreeBox);
 	glBindVertexArray(0);
-	
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDisable(GL_BLEND);
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_POLYGON_SMOOTH);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

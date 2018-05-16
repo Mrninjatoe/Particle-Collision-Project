@@ -8,11 +8,12 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, bo
 	_setupAttributes();
 }
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX) {
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles) {
 	_vertices = vertices;
 	_indices = indices;
 	_min = min;
 	_max = max;
+	_triangles = triangles;
 	_hasModelMX = hasMX;
 	_setupBuffers();
 	_setupAttributes();

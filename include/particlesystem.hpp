@@ -11,6 +11,7 @@ class ParticleSystem {
 public:
 	const static enum ParticleMethod : int { Octree3DCollision = 0, ScreeSpaceParticleCollision = 1 };
 	ParticleSystem(ParticleMethod type = Octree3DCollision);
+	ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct);
 	~ParticleSystem();
 
 	const static enum ParticleBindingLocation : const int {
@@ -19,8 +20,6 @@ public:
 		color = 2,
 		velocities = 3
 	};
-
-
 	struct Particle {
 		glm::vec4 pos;
 		glm::vec4 dir;
@@ -38,7 +37,6 @@ public:
 	std::vector<Particle>& getParticles() { return _particles; }
 	void update(float delta, ShaderProgram* shader);
 	void fixOctreeBuffers(Octree* octree);
-	ParticleMethod getMethod();
 
 private:
 	std::vector<Emitter> _emitters;
@@ -47,7 +45,6 @@ private:
 	int _nrOfParticles;
 	ParticleMethod _collisionMethod;
 
-	void _setupBuffers();
 	void _setupAttributes(Emitter& e);
 	inline double _fRand(double fMin, double fMax)
 	{

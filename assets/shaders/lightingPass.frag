@@ -7,7 +7,6 @@ in vec2 vUV;
 
 out vec4 fragColor;
 
-
 layout(location = 18) uniform float zNear;
 layout(location = 19) uniform float zFar;
 layout(location = 20) uniform sampler2D positions;
@@ -24,8 +23,8 @@ void main(){
     float z_e = 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
 
 	//fragColor = vec4(1) * z_b;
-	fragColor = vec4(normal, 1);
-	//fragColor = color * z_e;
+	//fragColor = vec4(normal, 1) * z_e;
+	fragColor = color;
 	gl_FragDepth = z_b;
 	//fragColor = vec4(1) * z_e;
 }

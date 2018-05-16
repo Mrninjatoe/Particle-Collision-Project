@@ -35,6 +35,7 @@ private:
 	std::unique_ptr<MeshLoader> _meshLoader;
 	std::unique_ptr<TextureLoader> _textureLoader;
 	std::shared_ptr<Texture> _testTexture;
+	std::shared_ptr<Texture> _octreeData;
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
 	Camera _camera;
 	std::vector<Model> _models;
@@ -45,6 +46,7 @@ private:
 	ShaderProgram* _computeShader;
 	ShaderProgram* _octreePass;
 	Octree* _octree;
+	int _triangleCount = 0;
 	int _nrOfNodes = 0;
 
 	void _init();

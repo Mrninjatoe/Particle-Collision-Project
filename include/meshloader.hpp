@@ -14,6 +14,7 @@ public:
 	void processNode(aiNode* node, const aiScene* scene, Model& models);
 	Model loadMesh(const char* path, bool hasModelMX);
 	Mesh* getQuad();
+	Mesh* getCube();
 private:
 
 };

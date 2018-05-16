@@ -20,8 +20,20 @@ public:
 		glm::vec2 uv;
 	};
 
+	struct Triangle {
+		Triangle& mul(glm::mat4& model) {
+			for (int i = 0; i < 3; i++) {
+				verts[i] = model * verts[i];
+			}
+			return *this;
+		}
+
+		glm::vec4 verts[3];
+		glm::ivec4 id;
+	};
+
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, bool hasMX);
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX);
+	Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles);
 	~Mesh();
 	std::vector<Vertex> getVertices() { return _vertices; }
 	std::vector<unsigned short> getIndices() { return _indices; }
@@ -29,6 +41,7 @@ public:
 	GLuint getIBO() { return _ibo; }
 	glm::vec3 getMin() { return _min; }
 	glm::vec3 getMax() { return _max; }
+	std::vector<Triangle>& getTriangles() { return _triangles; }
 	void setMin(glm::vec4 min) { 
 		this->_min = glm::vec3(min.x, min.y, min.z);
 	}
@@ -39,6 +52,7 @@ private:
 	std::vector<Vertex> _vertices;
 	std::vector<unsigned short> _indices;
 	glm::vec3 _min, _max;
+	std::vector<Triangle> _triangles;
 	GLuint _vao;
 	GLuint _vbo;
 	GLuint _ibo;
@@ -50,14 +64,17 @@ private:
 
 struct Box {
 	Box(glm::vec3 min, glm::vec3 max) {
-		this->min = min;
-		this->max = max;
+		this->min = glm::vec4(min, 1);
+		this->max = glm::vec4(max, 1);
 	}
 	Box() {
-		min = glm::vec3(0);
-		max = glm::vec3(0);
+		this->min = glm::vec4(0,0,0,1);
+		this->max = glm::vec4(0,0,0,1);
 	}
-	glm::vec3 min, max;
+
+	glm::vec4 color = { 1,1,1,0 };
+	glm::vec4 min;
+	glm::vec4 max;
 };
 
 struct Model {
