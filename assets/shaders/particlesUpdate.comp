@@ -25,21 +25,23 @@ layout(location = 6) uniform float delta;
 layout(location = 7) uniform vec3 spawnPos;
 layout(location = 8) uniform mat4 v;
 layout(location = 9) uniform mat4 p;
+layout(location = 10) uniform mat4 rv;
 
 layout(location = 20) uniform sampler2D depth;
+layout(location = 21) uniform sampler2D normals;
+layout(location = 22) uniform sampler2D rDepth;
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-vec3 viewSpacePoint(vec2 uv) {
-	//float z = texture(depth, uv).r;
-	//vec4 w_pos = vec4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, z, 1.0);
-	//vec4 v_pos = inverse(p) * w_pos;
-	//return (v_pos / v_pos.w).xyz;
-
+vec3 viewSpacePoint(vec2 uv, bool r) {
 	mat4 invProj = inverse(p);
-	float z = texture(depth, uv).r;
+	float z = 0;
+	if(!r)
+		z = texture(depth, uv).r;
+	else
+		z = texture(rDepth, uv).r;
 	z = z * 2.0 - 1.0;
 	vec4 clipSpacePos = vec4(uv * 2.0 - 1.0, z, 1.0);
 	vec4 viewPos = invProj * clipSpacePos;
@@ -66,39 +68,46 @@ void main(){
 	vec4 viewPos = v * vec4(vec3(pos.xyz), 1);
 	vec4 clipPos = p * viewPos;
 
+	vec4 rViewPos = rv * vec4(vec3(pos.xyz), 1);
+	vec4 rClipPos = p * rViewPos;
+
 	vec2 proj0 = clipPos.xy / clipPos.w * 0.5 + 0.5;
+	vec2 proj1 = rClipPos.xy / rClipPos.w * 0.5 + 0.5;
 
-	vec3 bufferDepth = viewSpacePoint(proj0);
+	vec3 bufferDepth = viewSpacePoint(proj0, false);
+	vec3 rBufferDepth = viewSpacePoint(proj1, true);
+
+	if(proj0.x > 0.0 && proj0.x < 1.0 && proj0.y > 0.0 && proj0.y < 1.0 && 
+		bufferDepth.z < -1e-2 && bufferDepth.z > viewPos.z && bufferDepth.z < (viewPos.z + 0.1)) {
+
+		vec3 n = texture(normals, proj0).xyz;
+		vec3 r = reflect(normalize(vel.xyz), n);
 	
-
-	if(proj0.x > 0.0 && proj0.x < 1.0 && proj0.y > 0.0 && proj0.y < 1.0 && bufferDepth.z < -1e-2 && bufferDepth.z > viewPos.z && bufferDepth.z < (viewPos.z + 0.1)) {
-		vec2 eps = vec2(1.0) / textureSize(depth, 0).xy;
-		
-		vec2 proj1 = proj0 + vec2(eps.x, 0.0);
-		vec2 proj2 = proj0 + vec2(0.0, eps.y);
-
-		vec3 p0 = viewSpacePoint(proj0);
-		vec3 p1 = viewSpacePoint(proj1);
-		vec3 p2 = viewSpacePoint(proj2);
-		
-		mat4 invV = inverse(v);
-		vec3 n = mat3(invV) * normalize(cross(p1.xyz - p0.xyz, p2.xyz - p0.xyz));
-		vec3 r = reflect(vel.xyz, n);
-
 		pos += vec4(n, 1) * 0.01;
-		vel = vec4(r, 1) * 0.3 + cos(pos * 1e5) * 5e-4;
+		vel = vec4(r, 1) * 0.3 + cos(pos * 1e3) * 5e-4;
+	}
+	else if(proj1.x > 0.0 && proj1.x < 1.0 && proj1.y > 0.0 && proj1.y < 1.0 && 
+		rBufferDepth.z < -1e-2 && rBufferDepth.z > rViewPos.z && rBufferDepth.z < (rViewPos.z + 0.1)) {
+
+		vec3 n = texture(normals, proj1).xyz;
+		vec3 r = reflect(normalize(vel.xyz), n);
+		
+		//pos += n * 1e-4;
+		pos += vec4(n, 1) * 0.01;
+		vel = vec4(r, 1) * 0.03 + cos(pos * 1e3) * 5e-4;
+	
 	}
 	vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
 	pos += vel * delta;
 
 
 	color = colors[index];
-
+	barrier();
 	candy.x -= 1.0f * delta;
 	pos.a = candy.x;
 	vel.a = candy.y;
 
-	barrier();
+	
 
 	positions[index] = pos;
 	directions[index] = dir;

@@ -36,10 +36,12 @@ private:
 	std::unique_ptr<TextureLoader> _textureLoader;
 	std::shared_ptr<Texture> _testTexture;
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
+	std::shared_ptr<GLFrameBuffer> _reflectedFBO;
 	Camera _camera;
 	std::vector<Model> _models;
 	ParticleSystem* _particleSystem;
 	ShaderProgram* _geometryPass;
+	ShaderProgram* _reflectionPass;
 	ShaderProgram* _lightingPass;
 	ShaderProgram* _particlePass;
 	ShaderProgram* _computeShader;

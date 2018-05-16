@@ -55,6 +55,15 @@ glm::mat4 Camera::getView() {
 	return glm::inverse(glm::translate(position) * glm::mat4_cast(glm::rotate(orientation, glm::pi<float>(), glm::vec3(0, 1, 0))));
 }
 
+glm::mat4 Camera::getReflectedView() {
+	glm::mat4 view = getView();
+	glm::vec3 forward = glm::vec3(-view[0][2], -view[1][2], -view[2][2]);
+	glm::vec3 up = glm::vec3(-view[0][1], view[1][1], -view[2][1]);
+	glm::quat temp = glm::quat(glm::vec3(0, yaw + 3.1415, 0)) * glm::quat(glm::vec3(-pitch, 0, 0));
+	glm::vec3 pos = position + (5.f * forward);
+	return glm::inverse(glm::translate(pos) * glm::mat4_cast(glm::rotate(temp, glm::pi<float>(), glm::vec3(0, 1, 0))));
+}
+
 glm::mat4 Camera::getProj() {
 	auto size = Engine::getInstance()->getWindow()->getSizes();
 	float aspect = size.x / (float)size.y;

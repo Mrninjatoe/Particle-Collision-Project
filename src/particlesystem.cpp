@@ -41,7 +41,7 @@ ParticleSystem::~ParticleSystem() {
 
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	shader->setValue(6, 0.01f);
-	shader->setValue(7, glm::vec3(1, 10, 1));
+	shader->setValue(7, glm::vec3(1.5f, 10, 1));
 	switch (_collisionMethod) {
 	case Octree3DCollision:
 		for (int i = 0; i < _ssbos.size(); i++) {

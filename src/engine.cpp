@@ -120,11 +120,20 @@ int Engine::run() {
 			// Texture.
 			_geometryPass->setValue(1, _camera.getView());
 			_geometryPass->setValue(2, _camera.getProj());
+			_geometryPass->setValue(3, _camera.getReflectedView());
 			_geometryPass->setValue(22, 0);
 			_testTexture->bind(0);
 			// Bind FBO for gBuffers output
 			_deferredFBO->bind();
 			_renderer->render(_screen.get(), _models, _geometryPass);
+		}
+
+		{
+			_reflectionPass->useProgram();
+			_reflectionPass->setValue(1, _camera.getReflectedView());
+			_reflectionPass->setValue(2, _camera.getProj());
+			_reflectedFBO->bind();
+			_renderer->render(_screen.get(), _models, _reflectionPass);
 		}
 
 		{ // Lighting pass to reconstruct scene.
@@ -133,23 +142,30 @@ int Engine::run() {
 			_lightingPass->setValue(21, 1);
 			_lightingPass->setValue(22, 2);
 			_lightingPass->setValue(23, 3);
+			_lightingPass->setValue(24, 4);
 			_lightingPass->setValue(18, _camera.zNear);
 			_lightingPass->setValue(19, _camera.zFar);
 			(*_deferredFBO)[0]->bind(0);
 			(*_deferredFBO)[1]->bind(1);
 			(*_deferredFBO)[2]->bind(2);
 			_deferredFBO->bindDepth(3);
+			_reflectedFBO->bindDepth(4);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
 		}
-
+		
 		_computeShader->useProgram();
 		_computeShader->setValue(5, _camera.position);
 		_computeShader->setValue(8, _camera.getView());
 		_computeShader->setValue(9, _camera.getProj());
+		_computeShader->setValue(10, _camera.getReflectedView());
 		_computeShader->setValue(20, 0);
+		_computeShader->setValue(21, 1);
+		_computeShader->setValue(22, 2);
 		_deferredFBO->bindDepth(0);
+		(*_deferredFBO)[1]->bind(1);
+		_reflectedFBO->bindDepth(2);
 		_particleSystem->update(deltaTime, _computeShader);
 		{ // Particle pass.
 			auto ssbos = _particleSystem->getSSBuffers();
@@ -254,6 +270,11 @@ void Engine::_init() {
 	_geometryPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/geometryPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/geometryPass.frag")
 		.finalize();
+
+	_reflectionPass = new ShaderProgram("Reflection Pass");
+	_reflectionPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/reflectionPass.vert")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/reflectionPass.frag")
+		.finalize();
 	
 	_lightingPass = new ShaderProgram("Lighting Pass");
 	_lightingPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/lightingPass.vert")
@@ -295,6 +316,11 @@ void Engine::_initWorld() {
 		.addTexture(2, Texture::TextureFormat::RGBA32f, _screen->getWidth(), _screen->getHeight())
 		.addDepth(3, _screen->getWidth(), _screen->getHeight())
 		.finalize();
+	_reflectedFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
+	_reflectedFBO->bind()
+		.addDepth(0, _screen->getWidth(), _screen->getHeight())
+		.finalize();
+
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
@@ -305,8 +331,8 @@ void Engine::_initWorld() {
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 2.5), glm::vec3(1));
 	_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6));
-	/*_models.push_back(_meshLoader->loadMesh("assets/models/icosphere.fbx", true));
-	_models.back().updateModelMatrix(glm::vec3(1, 3, 1), glm::vec3(1));*/
+	_models.push_back(_meshLoader->loadMesh("assets/models/icosphere.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(1, 3, 1), glm::vec3(1));
 	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision);
 	_camera.position = glm::vec3(0, 0, 0);
 
