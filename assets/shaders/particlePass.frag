@@ -23,5 +23,5 @@ void main(){
 	//float depth = clipSpacePos.z / clipSpacePos.w;
 	float diffuse = max(0.0, dot(n, vec3(0, 0.2f, -1)));
 	float spec = max(pow(dot(n, normalize(forward + vec3(0, 0.2f, -1))), 250.f), 0);
-	fColor = textureColor * diffuse + (spec * vec4(1) * vec4(1));
+	fColor = vec4(0.7, 0.3, 0.7, 1) * diffuse + (spec * vec4(1) * vec4(1));
 }
