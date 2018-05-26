@@ -377,12 +377,13 @@ void Engine::_initWorld() {
 	}
 
 	//printf("NUMBER OF MODELS: %zu\n", _models.size());
-	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-	_octree->getNrOfNodes(_octree, _nrOfNodes);
+	//_octree = new Octree(Box(min, max), allTriangles, 0, 0);
+	//_octree->getNrOfNodes(_octree, _nrOfNodes);
 	//printf("%i\n\n", _nrOfNodes);
 	
 	
-	_triangleCount = allTriangles.size();
+
+	//_triangleCount = allTriangles.size();
 	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
 	
 	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
