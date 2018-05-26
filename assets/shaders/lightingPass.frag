@@ -26,7 +26,8 @@ void main(){
 
 	//fragColor = vec4(1) * z_b;
 	//fragColor = vec4(normal, 1) * z_e;
-	fragColor = color;
+	fragColor = vec4(normal, 1);
+	//fragColor = color;
 	gl_FragDepth = z_b;
 	//fragColor = vec4(1) * z_e;
 }

@@ -42,10 +42,10 @@ public:
 	glm::vec3 getMin() { return _min; }
 	glm::vec3 getMax() { return _max; }
 	std::vector<Triangle>& getTriangles() { return _triangles; }
-	void setMin(glm::vec4 min) { 
+	void setMin(glm::vec4 min) {
 		this->_min = glm::vec3(min.x, min.y, min.z);
 	}
-	void setMax(glm::vec4 max) { 
+	void setMax(glm::vec4 max) {
 		this->_max = glm::vec3(max.x, max.y, max.z);;
 	}
 private:
@@ -68,8 +68,8 @@ struct Box {
 		this->max = glm::vec4(max, 1);
 	}
 	Box() {
-		this->min = glm::vec4(0,0,0,1);
-		this->max = glm::vec4(0,0,0,1);
+		this->min = glm::vec4(0, 0, 0, 1);
+		this->max = glm::vec4(0, 0, 0, 1);
 	}
 
 	glm::vec4 color = { 1,1,1,0 };

@@ -44,13 +44,13 @@ void Mesh::_setupAttributes() {
 
 	glEnableVertexAttribArray(BindingLocation::position);
 	glVertexAttribPointer(BindingLocation::position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
-	
+
 	glEnableVertexAttribArray(BindingLocation::normal);
 	glVertexAttribPointer(BindingLocation::normal, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Vertex::normal));
-	
+
 	glEnableVertexAttribArray(BindingLocation::color);
 	glVertexAttribPointer(BindingLocation::color, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Vertex::color));
-	
+
 	glEnableVertexAttribArray(BindingLocation::uv);
 	glVertexAttribPointer(BindingLocation::uv, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Vertex::uv));
 

@@ -194,12 +194,12 @@ int Engine::run() {
 		}
 
 		// Uncomment when screen-space.
-		{ // Octree renderer.
-			_octreePass->useProgram();
-			_octreePass->setValue(6, _camera.getView());
-			_octreePass->setValue(7, _camera.getProj());
-			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
-		}
+		//{ // Octree renderer.
+		//	_octreePass->useProgram();
+		//	_octreePass->setValue(6, _camera.getView());
+		//	_octreePass->setValue(7, _camera.getProj());
+		//	_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+		//}
 
 		{
 			//GLint total_mem_kb = 0;
@@ -294,13 +294,13 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
-	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
-		.finalize();
-
 	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
-	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
 	//	.finalize();
+
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -340,15 +340,16 @@ void Engine::_initWorld() {
 		.finalize();
 
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
+	_models.back().updateModelMatrix(glm::vec3(0, 0.3f, 0), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6)); 
 	/*_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(2.5, 0, 0), glm::vec3(1));
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(2.5, 0, 2.5), glm::vec3(1));
 	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0, 2.5), glm::vec3(1));
-	_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6));*/
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 2.5), glm::vec3(1));*/
+	
 	/*_models.push_back(_meshLoader->loadMesh("assets/models/icosphere.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(1, 3, 1), glm::vec3(1));*/
 	_camera.position = glm::vec3(0, 0, 0);
@@ -382,7 +383,7 @@ void Engine::_initWorld() {
 	
 	
 	_triangleCount = allTriangles.size();
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
 	
-	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }
