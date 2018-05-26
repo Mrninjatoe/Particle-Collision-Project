@@ -194,12 +194,12 @@ int Engine::run() {
 		}
 
 		// Uncomment when screen-space.
-		{ // Octree renderer.
-			_octreePass->useProgram();
-			_octreePass->setValue(6, _camera.getView());
-			_octreePass->setValue(7, _camera.getProj());
-			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
-		}
+		//{ // Octree renderer.
+		//	_octreePass->useProgram();
+		//	_octreePass->setValue(6, _camera.getView());
+		//	_octreePass->setValue(7, _camera.getProj());
+		//	_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+		//}
 
 		{
 			//GLint total_mem_kb = 0;
@@ -294,13 +294,13 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
-	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
-		.finalize();
-
 	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
-	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
 	//	.finalize();
+
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -376,13 +376,13 @@ void Engine::_initWorld() {
 	}
 
 	//printf("NUMBER OF MODELS: %zu\n", _models.size());
-	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-	_octree->getNrOfNodes(_octree, _nrOfNodes);
+	//_octree = new Octree(Box(min, max), allTriangles, 0, 0);
+	//_octree->getNrOfNodes(_octree, _nrOfNodes);
 	//printf("%i\n\n", _nrOfNodes);
 	
 	
-	_triangleCount = allTriangles.size();
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	//_triangleCount = allTriangles.size();
+	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
 	
-	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }
