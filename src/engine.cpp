@@ -339,7 +339,7 @@ void Engine::_initWorld() {
 		.addDepth(1, _screen->getWidth(), _screen->getHeight())
 		.finalize();
 
-	_models.push_back(_meshLoader->loadMesh("assets/models/bb8.fbx", true));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bunny.obj", true));
 	_models.back().updateModelMatrix(glm::vec3(0, 0.3f, 0), glm::vec3(1));
 	_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6)); 

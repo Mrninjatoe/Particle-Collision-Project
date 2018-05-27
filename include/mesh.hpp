@@ -32,11 +32,11 @@ public:
 		glm::ivec4 id;
 	};
 
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, bool hasMX);
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned short> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles);
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, bool hasMX);
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles);
 	~Mesh();
 	std::vector<Vertex> getVertices() { return _vertices; }
-	std::vector<unsigned short> getIndices() { return _indices; }
+	std::vector<GLuint> getIndices() { return _indices; }
 	GLuint getVAO() { return _vao; }
 	GLuint getIBO() { return _ibo; }
 	glm::vec3 getMin() { return _min; }
@@ -50,7 +50,7 @@ public:
 	}
 private:
 	std::vector<Vertex> _vertices;
-	std::vector<unsigned short> _indices;
+	std::vector<GLuint> _indices;
 	glm::vec3 _min, _max;
 	std::vector<Triangle> _triangles;
 	GLuint _vao;

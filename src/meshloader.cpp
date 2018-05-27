@@ -16,11 +16,11 @@ MeshLoader::~MeshLoader() {
 
 Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Mesh::Vertex> vertices;
-	std::vector<unsigned short> indices;
+	std::vector<GLuint> indices;
 
 	glm::vec3 min = glm::vec3(0);
 	glm::vec3 max = glm::vec3(0);
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+	for (GLuint i = 0; i < mesh->mNumVertices; i++) {
 		Mesh::Vertex vertex;
 		glm::vec3 tempV;
 
@@ -54,10 +54,10 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 	}
 
 	std::vector<Mesh::Triangle> triangles;
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+	for (GLuint i = 0; i < mesh->mNumFaces; i++) {
 		Mesh::Triangle temp;
 		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++) {
+		for (GLuint j = 0; j < face.mNumIndices; j++) {
 			indices.push_back(face.mIndices[j]);
 			temp.verts[j] = glm::vec4(vertices[face.mIndices[j]].pos, 1);
 			//temp.indices[j] = indices.back();
@@ -79,7 +79,7 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {
 	printf("NumMeshes in aiScene: %u\n", scene->mNumMeshes);
-	for (unsigned int i = 0; i < node->mNumMeshes;i++) {
+	for (GLuint i = 0; i < node->mNumMeshes;i++) {
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		models.meshes.push_back(processMesh(mesh, scene));
 
@@ -87,7 +87,7 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) 
 		models.boundingBox.max = glm::max(models.boundingBox.max, glm::vec4(models.meshes.back()->getMax(), 1));
 	}
 
-	for (unsigned int i = 0; i < node->mNumChildren; i++) {
+	for (GLuint i = 0; i < node->mNumChildren; i++) {
 		processNode(node->mChildren[i], scene, models);
 	}
 }
@@ -114,7 +114,7 @@ Mesh* MeshLoader::getQuad() {
 		Mesh::Vertex{ { 1, -1, 0 },{ 0, 0, -1 },{ 1, 0, 1 },{ 1, 0 }},
 		Mesh::Vertex{ { -1, -1, 0 },{ 0, 0, -1 },{ 1, 0, 1 },{ 0, 0 }}
 	};
-	std::vector<unsigned short> indices{ 0, 2, 1, 2, 0, 3 };
+	std::vector<GLuint> indices{ 0, 2, 1, 2, 0, 3 };
 	return new Mesh(vertices, indices, false);
 };
 
@@ -153,7 +153,7 @@ Mesh* MeshLoader::getCube() {
 		Mesh::Vertex{ { -0.5, -0.5, 0.5 },{ 0,0,0 },{ 0,0,0 },{ 0,0 } },
 	};
 
-	std::vector<unsigned short> indices{
+	std::vector<GLuint> indices{
 		0, 1, 
 		1, 2, 
 		2, 3,

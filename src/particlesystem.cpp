@@ -30,6 +30,7 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
 																			//_setupBuffers();
+	_collisionMethod = type;
 }
 
 ParticleSystem::~ParticleSystem() {

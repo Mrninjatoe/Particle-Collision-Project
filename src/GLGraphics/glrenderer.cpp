@@ -68,7 +68,7 @@ void GLRenderer::render(Window* window, ShaderProgram* shader) {
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBindVertexArray(_fullscreenQuad->getVAO());
-	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+	glDrawElements(GL_TRIANGLES, _fullscreenQuad->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
 }
 
@@ -81,7 +81,7 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 		shader->setValue(0, model.model);
 		for (auto mesh : model.meshes) {
 			glBindVertexArray(mesh->getVAO());
-			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 			glBindVertexArray(0);
 		}
 	}
