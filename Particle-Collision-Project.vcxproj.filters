@@ -20,6 +20,7 @@
     <ClCompile Include="src\textureloader.cpp" />
     <ClCompile Include="src\window.cpp" />
     <ClCompile Include="src\octree.cpp" />
+    <ClCompile Include="src\pointlight.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\camera.hpp" />
@@ -35,5 +36,6 @@
     <ClInclude Include="include\textureloader.hpp" />
     <ClInclude Include="include\window.hpp" />
     <ClInclude Include="include\octree.hpp" />
+    <ClInclude Include="include\pointlight.hpp" />
   </ItemGroup>
 </Project>

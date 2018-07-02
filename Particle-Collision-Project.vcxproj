@@ -155,6 +155,7 @@
     <ClCompile Include="src\meshloader.cpp" />
     <ClCompile Include="src\octree.cpp" />
     <ClCompile Include="src\particlesystem.cpp" />
+    <ClCompile Include="src\pointlight.cpp" />
     <ClCompile Include="src\shaderprogram.cpp" />
     <ClCompile Include="src\textureloader.cpp" />
     <ClCompile Include="src\window.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="include\meshloader.hpp" />
     <ClInclude Include="include\octree.hpp" />
     <ClInclude Include="include\particlesystem.hpp" />
+    <ClInclude Include="include\pointlight.hpp" />
     <ClInclude Include="include\shaderprogram.hpp" />
     <ClInclude Include="include\textureloader.hpp" />
     <ClInclude Include="include\window.hpp" />

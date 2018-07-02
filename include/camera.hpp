@@ -18,8 +18,8 @@ public:
 	bool moveLeft = false;
 	bool enableMouse = true;
 	
-	float zNear = 0.1f;
-	float zFar = 8.f;
+	float zNear = 0.01f;
+	float zFar = 25.f;
 	float pitch;
 	float yaw;
 	float counter = 0.f;
