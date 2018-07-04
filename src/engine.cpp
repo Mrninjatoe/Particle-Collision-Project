@@ -202,12 +202,12 @@ int Engine::run() {
 		}
 
 		// Uncomment when screen-space.
-		//{ // Octree renderer.
-		//	_octreePass->useProgram();
-		//	_octreePass->setValue(6, _camera.getView());
-		//	_octreePass->setValue(7, _camera.getProj());
-		//	_renderer->renderOctree(_screen.get(), _octreePass, _octree);
-		//}
+		{ // Octree renderer.
+			_octreePass->useProgram();
+			_octreePass->setValue(6, _camera.getView());
+			_octreePass->setValue(7, _camera.getProj());
+			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+		}
 
 		{
 			//GLint total_mem_kb = 0;
@@ -302,13 +302,13 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
-	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
-	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
-	//	.finalize();
-
-	_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
 		.finalize();
+
+	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
+	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+	//	.finalize();
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -347,12 +347,12 @@ void Engine::_initWorld() {
 		.addDepth(1, _screen->getWidth(), _screen->getHeight())
 		.finalize();
 
-	//_models.push_back(_meshLoader->loadMesh("assets/models/bunny.obj", true));
-	//_models.back().updateModelMatrix(glm::vec3(0, 0.3f, 0), glm::vec3(1));
+	_models.push_back(_meshLoader->loadMesh("assets/models/bunny.obj", true));
+	_models.back().updateModelMatrix(glm::vec3(0, 0.3f, 0), glm::vec3(1));
 	//_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
 	//_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6)); 
-	_models.push_back(_meshLoader->loadMesh("assets/models/sponza.obj", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(0.001));
+	//_models.push_back(_meshLoader->loadMesh("assets/models/sponza.obj", true));
+	//_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(0.001));
 
 	_pointLights.push_back(PointLight(glm::vec3(0.25f,1.0f, 0.25f), glm::vec3(0,0,1)));
 	_camera.position = glm::vec3(0, 0, 0);
@@ -379,14 +379,14 @@ void Engine::_initWorld() {
 	}
 
 	//printf("NUMBER OF MODELS: %zu\n", _models.size());
-	//_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-	//_octree->getNrOfNodes(_octree, _nrOfNodes);
+	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
+	_octree->getNrOfNodes(_octree, _nrOfNodes);
 	//printf("%i\n\n", _nrOfNodes);
 	
 	
 
-	//_triangleCount = allTriangles.size();
-	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	_triangleCount = allTriangles.size();
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
 	
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }

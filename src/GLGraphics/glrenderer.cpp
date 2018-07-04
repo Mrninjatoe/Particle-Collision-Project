@@ -82,7 +82,6 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 		for (auto mesh : model.meshes) {
 			if (mesh->hasTextures()) {
 				auto textures = mesh->getTextures();
-				printf("%zu\n", textures.size());
 				for (int i = 0; i < textures.size(); i++) {
 					shader->setValue(22, i);
 					textures[i].bind(i);

@@ -48,21 +48,13 @@ void Octree::buildTree() {
 
 	Box* octant = new Box[8];
 	octant[0] = Box(region.min, center);
-	//octant[0].color = {1,1,1,0};
 	octant[1] = Box(glm::vec3(center.x, region.min.y, region.min.z), glm::vec3(region.max.x, center.y, center.z));
-	//octant[1].color = {0,1,1,0};
 	octant[2] = Box(glm::vec3(center.x, region.min.y, center.z), glm::vec3(region.max.x, center.y, region.max.z));
-	//octant[2].color = { 0,0,1,0 };
 	octant[3] = Box(glm::vec3(region.min.x, region.min.y, center.z), glm::vec3(center.x, center.y, region.max.z));
-	//octant[3].color = {0.5, 0.1, 0.1, 0};
 	octant[4] = Box(glm::vec3(region.min.x, center.y, region.min.z), glm::vec3(center.x, region.max.y, center.z));
-	//octant[4].color = {0.1, 0.5, 0.1, 0};
 	octant[5] = Box(glm::vec3(center.x, center.y, region.min.z), glm::vec3(region.max.x, region.max.y, center.z));
-	//octant[5].color = { 0.1, 0.1, 0.5, 0 };
 	octant[6] = Box(center, region.max);
-	//octant[6].color = { 0.1, 0.5, 0.5, 0 };
 	octant[7] = Box(glm::vec3(region.min.x, center.y, center.z), glm::vec3(center.x, region.max.y, region.max.z));
-	//octant[7].color = { 0.9, 0.5, 0.5, 0 };
 
 	std::vector<std::vector<Mesh::Triangle>> octLists;
 	octLists.resize(8);
@@ -111,7 +103,7 @@ void Octree::renderOctree(ShaderProgram* shader, Octree* current, Mesh* box) {
 		shader->setValue(2, glm::scale(glm::vec3(current->region.max - current->region.min)));
 		shader->setValue(9, glm::vec4(1, 0, 0.5, 1));
 		glLineWidth(2);
-		glDrawElements(GL_LINES, box->getIndices().size(), GL_UNSIGNED_SHORT, nullptr);
+		glDrawElements(GL_LINES, box->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 		for (int i = 0; i < current->trisIndices.size(); i++) {
 			renderOctree(shader, current->children[current->trisIndices[i]], box);
 		}

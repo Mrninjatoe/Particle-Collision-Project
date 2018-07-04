@@ -37,7 +37,7 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
 	_nrOfParticles = 1024;
 		//_nrOfParticles = 65536;
-		std::vector<glm::vec4> positions;
+	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
