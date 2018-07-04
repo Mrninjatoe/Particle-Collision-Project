@@ -33,6 +33,7 @@ int Engine::run() {
 	double deltaTime = 0;
 
 	bool quit = false;
+	bool octreeVisible = false;
 
 	while (!quit) {
 		LAST = NOW;
@@ -106,6 +107,8 @@ int Engine::run() {
 				if (event.key.keysym.sym == SDLK_d) {
 					_camera.moveRight = false;
 				}
+				if (event.key.keysym.sym == SDLK_o)
+					octreeVisible = !octreeVisible;
 				break;
 			default:
 				break;
@@ -203,10 +206,12 @@ int Engine::run() {
 
 		// Uncomment when screen-space.
 		{ // Octree renderer.
-			_octreePass->useProgram();
-			_octreePass->setValue(6, _camera.getView());
-			_octreePass->setValue(7, _camera.getProj());
-			_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+			if (octreeVisible) {
+				_octreePass->useProgram();
+				_octreePass->setValue(6, _camera.getView());
+				_octreePass->setValue(7, _camera.getProj());
+				_renderer->renderOctree(_screen.get(), _octreePass, _octree);
+			}
 		}
 
 		{
@@ -354,7 +359,7 @@ void Engine::_initWorld() {
 	//_models.push_back(_meshLoader->loadMesh("assets/models/sponza.obj", true));
 	//_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(0.001));
 
-	_pointLights.push_back(PointLight(glm::vec3(0.25f,1.0f, 0.25f), glm::vec3(0,0,1)));
+	_pointLights.push_back(PointLight(glm::vec3(0.25f, 3.0f, 0.25f), glm::vec3(1,1,1)));
 	_camera.position = glm::vec3(0, 0, 0);
 
 	glm::vec3 min = {100, 100, 100};

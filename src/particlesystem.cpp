@@ -46,8 +46,8 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 		positions.push_back(p.pos = glm::vec4(0, 10, 0, _fRand(5, 10)));
 		directions.push_back(p.dir = glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), 0));
 				//velocities.push_back(glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), p.pos.a));
-			velocities.push_back(glm::vec4(0, 1, 0, p.pos.a));
-		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.3f /*_fRand(0.2f, 0.5f)*/)));
+		velocities.push_back(glm::vec4(0, 1, 0, p.pos.a));
+		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.025f /*_fRand(0.2f, 0.5f)*/)));
 		_particles.push_back(p);
 		
 	}

@@ -101,8 +101,8 @@ void Octree::renderOctree(ShaderProgram* shader, Octree* current, Mesh* box) {
 	if (current->treeBuilt) {
 		shader->setValue(1, glm::vec3((current->region.max + current->region.min) * 0.5f));
 		shader->setValue(2, glm::scale(glm::vec3(current->region.max - current->region.min)));
-		shader->setValue(9, glm::vec4(1, 0, 0.5, 1));
-		glLineWidth(2);
+		shader->setValue(9, glm::vec4(0.3f, 0.86f, 0.39f, 1));
+		glLineWidth(1.5);
 		glDrawElements(GL_LINES, box->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 		for (int i = 0; i < current->trisIndices.size(); i++) {
 			renderOctree(shader, current->children[current->trisIndices[i]], box);
@@ -119,7 +119,7 @@ void Octree::getNrOfNodes(Octree* curr, int& count) {
 	}
 	if (curr->isLeaf) {
 		count++;
-		printf("Number of triangles at depth %i for leaf node[%i]: %i\n", curr->depth, curr->id, curr->triangles.size());
+		//printf("Number of triangles at depth %i for leaf node[%i]: %i\n", curr->depth, curr->id, curr->triangles.size());
 		return;
 	}
 }
