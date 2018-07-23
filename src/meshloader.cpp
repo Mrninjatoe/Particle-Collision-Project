@@ -1,4 +1,5 @@
 #include "meshloader.hpp"
+#include "engine.hpp"
 #include <vector>
 
 MeshLoader::MeshLoader() {
@@ -47,8 +48,9 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 			vec.y = mesh->mTextureCoords[0][i].y;
 			vertex.uv = vec;
 		}
-		else
+		else {
 			vertex.uv = glm::vec2(0.f);
+		}
 
 		vertices.push_back(vertex);
 	}
@@ -66,15 +68,31 @@ Mesh* MeshLoader::processMesh(aiMesh* mesh, const aiScene* scene) {
 		triangles.push_back(temp);
 	}
 
-	//for (int i = 0; i < vertices.size() / 3; i += 3) {
-	//	for (int j = 0; j < 3; j++) {
-	//		//temp.verts[j] = vertices[indices[j + i]].pos;
-	//	}
-	//	triangles.push_back(temp);
-	//}
-	//printf("%zu\n", triangles.size());
+	std::vector<Texture> textures;
+	int hasTextures = 0;
+	if (mesh->mMaterialIndex > 0) {
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		for (unsigned int i = 0; i < material->GetTextureCount(aiTextureType_DIFFUSE); i++) {
+			aiString str;
+			material->GetTexture(aiTextureType_DIFFUSE, i, &str);
+			textures.push_back(Texture(str.C_Str()));
+			hasTextures = 1;
+		}
+		//for (unsigned int i = 0; i < material->GetTextureCount(aiTextureType_SPECULAR); i++) {
+		//	aiString str;
+		//	material->GetTexture(aiTextureType_SPECULAR, i, &str);
+		//	textures.push_back(Texture(str.C_Str()));
+		//}
+	}
+	else {
+		textures.push_back(Texture("error.png"));
+		hasTextures = 1;
+	}
 
-	return new Mesh(vertices, indices, min, max, true, triangles);
+	if (hasTextures)
+		return new Mesh(vertices, indices, min, max, true, triangles, textures);
+	else
+		return new Mesh(vertices, indices, min, max, true, triangles);
 }
 
 void MeshLoader::processNode(aiNode* node, const aiScene* scene, Model& models) {

@@ -8,6 +8,7 @@
 #include "camera.hpp"
 #include "particlesystem.hpp"
 #include "octree.hpp"
+#include "pointlight.hpp"
 class Engine {
 public:
 	Engine();
@@ -41,6 +42,7 @@ private:
 	GLuint _skyboxCubeMap;
 	Camera _camera;
 	std::vector<Model> _models;
+	std::vector<PointLight> _pointLights;
 	ParticleSystem* _particleSystem;
 	ShaderProgram* _geometryPass;
 	ShaderProgram* _reflectionPass;

@@ -80,6 +80,13 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	for (auto model : models) {
 		shader->setValue(0, model.model);
 		for (auto mesh : model.meshes) {
+			if (mesh->hasTextures()) {
+				auto textures = mesh->getTextures();
+				for (int i = 0; i < textures.size(); i++) {
+					shader->setValue(22, i);
+					textures[i].bind(i);
+				}
+			}
 			glBindVertexArray(mesh->getVAO());
 			glDrawElements(GL_TRIANGLES, mesh->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 			glBindVertexArray(0);

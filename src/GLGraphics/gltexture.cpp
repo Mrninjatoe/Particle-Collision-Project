@@ -8,9 +8,11 @@ Texture::Texture(const TextureFormat format, glm::vec2 size) {
 }
 
 Texture::Texture(const std::string& path) {
-	SDL_Surface* surface = IMG_Load(path.c_str());
+	printf("%s\n\n", path.c_str());
+	std::string temp = "assets/textures/"+ path;
+	SDL_Surface* surface = IMG_Load(temp.c_str());
 	if (!surface)
-		printf("Texture %s failed to load! SDL_image Error: %s\n", path.c_str(), SDL_GetError());
+		printf("Texture %s failed to load! SDL_image Error: %s\n", temp.c_str(), SDL_GetError());
 	else {
 		SDL_Surface* newSurf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
 		if (!newSurf)

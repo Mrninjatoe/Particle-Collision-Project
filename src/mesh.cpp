@@ -4,6 +4,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, bool hasMX
 	_vertices = vertices;
 	_indices = indices;
 	_hasModelMX = hasMX;
+	_hasTextures = 0;
 	_setupBuffers();
 	_setupAttributes();
 }
@@ -15,6 +16,20 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, glm::vec3 
 	_max = max;
 	_triangles = triangles;
 	_hasModelMX = hasMX;
+	_hasTextures = 0;
+	_setupBuffers();
+	_setupAttributes();
+}
+
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles, std::vector<Texture>& textures) {
+	_vertices = vertices;
+	_indices = indices;
+	_min = min;
+	_max = max;
+	_triangles = triangles;
+	_hasModelMX = hasMX;
+	_textures = textures;
+	_hasTextures = 1;
 	_setupBuffers();
 	_setupAttributes();
 }

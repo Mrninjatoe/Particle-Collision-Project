@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <glm/gtx/transform.hpp>
+#include "GLGraphics/gltexture.hpp"
 
 class Mesh {
 public:
@@ -34,6 +35,7 @@ public:
 
 	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, bool hasMX);
 	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles);
+	Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, glm::vec3 min, glm::vec3 max, bool hasMX, std::vector<Triangle>& triangles, std::vector<Texture>& textures);
 	~Mesh();
 	std::vector<Vertex> getVertices() { return _vertices; }
 	std::vector<GLuint> getIndices() { return _indices; }
@@ -42,6 +44,8 @@ public:
 	glm::vec3 getMin() { return _min; }
 	glm::vec3 getMax() { return _max; }
 	std::vector<Triangle>& getTriangles() { return _triangles; }
+	std::vector<Texture>& getTextures() { return _textures; }
+	int hasTextures() { return _hasTextures; }
 	void setMin(glm::vec4 min) {
 		this->_min = glm::vec3(min.x, min.y, min.z);
 	}
@@ -56,7 +60,9 @@ private:
 	GLuint _vao;
 	GLuint _vbo;
 	GLuint _ibo;
+	std::vector<Texture> _textures;
 	bool _hasModelMX;
+	int _hasTextures;
 
 	void _setupBuffers();
 	void _setupAttributes();

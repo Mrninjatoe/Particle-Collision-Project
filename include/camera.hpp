@@ -20,6 +20,7 @@ public:
 	
 	float zNear = 0.1f;
 	float zFar = 3000.f;
+
 	float pitch;
 	float yaw;
 	float counter = 0.f;

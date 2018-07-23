@@ -4,6 +4,7 @@
 ParticleSystem::ParticleSystem(ParticleMethod type) {
 	//_nrOfParticles = 1024;
 	_nrOfParticles = 65536;
+	//_nrOfParticles = 524288;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
@@ -30,6 +31,42 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
 																			//_setupBuffers();
+	_collisionMethod = type;
+}
+
+ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
+	_nrOfParticles = 1024;
+		//_nrOfParticles = 65536;
+	std::vector<glm::vec4> positions;
+	std::vector<glm::vec4> directions;
+	std::vector<glm::vec4> colors;
+	std::vector<glm::vec4> velocities;
+	for (int i = 0; i < _nrOfParticles; i++) {
+		Particle p;
+		positions.push_back(p.pos = glm::vec4(0, 10, 0, _fRand(5, 10)));
+		directions.push_back(p.dir = glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), 0));
+				//velocities.push_back(glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), p.pos.a));
+		velocities.push_back(glm::vec4(0, 1, 0, p.pos.a));
+		colors.push_back(p.color = (glm::vec4(1, 0, 0, 0.025f /*_fRand(0.2f, 0.5f)*/)));
+		_particles.push_back(p);
+		
+	}
+	
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities));
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, triangles));
+	std::vector<Octree::Node> nodes;
+	rootOct->getNodes(rootOct, nodes);
+	//std::vector<Box> boxes;
+	//for (int i = 0; i < nodes.size(); i++) {
+	//	boxes.push_back(nodes[i].);
+	//}
+	printf("Size of nodes vector: %zu\n,", nodes.size());
+	printf("%zu\n", sizeof(Octree::Node) * nodes.size());
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, nodes));
+	//_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, boxes));
 	_collisionMethod = type;
 }
 
