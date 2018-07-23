@@ -38,6 +38,7 @@ private:
 	std::shared_ptr<Texture> _octreeData;
 	std::shared_ptr<GLFrameBuffer> _deferredFBO;
 	std::shared_ptr<GLFrameBuffer> _reflectedFBO;
+	GLuint _skyboxCubeMap;
 	Camera _camera;
 	std::vector<Model> _models;
 	ParticleSystem* _particleSystem;
@@ -47,12 +48,18 @@ private:
 	ShaderProgram* _particlePass;
 	ShaderProgram* _computeShader;
 	ShaderProgram* _octreePass;
+	ShaderProgram* _skyboxPass;
 	Octree* _octree;
 	int _triangleCount = 0;
 	int _nrOfNodes = 0;
+
+	GLfloat _skyboxVertices[36];
+	GLuint _skyboxVAO, _skyboxVBO;
 
 	void _init();
 	void _initializeSDL();
 	void _initializeGL();
 	void _initWorld();
+	void _initSkybox();
+	void _renderSkybox();
 };

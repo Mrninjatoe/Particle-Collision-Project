@@ -14,6 +14,7 @@ public:
 	~GLRenderer();
 	void render(Window* window, ShaderProgram* shader);
 	void render(Window* window, std::vector<Model>& models, ShaderProgram* shader);
+	void renderSkybox(GLuint skyboxTexture);
 	//void renderParticles(Window* window, ShaderProgram* shader, std::vector<ParticleSystem::Emitter> emitters);
 	void renderParticles(Window* window, ShaderProgram* shader, std::vector<ParticleSystem::Particle>& particles);
 	void renderOctree(Window* window, ShaderProgram* shader, Octree* octree);
@@ -40,5 +41,6 @@ private:
 	SDL_GLContext _context;
 	Mesh* _fullscreenQuad;
 	Mesh* _octreeBox;
+	Mesh* _skybox;
 	GLuint _emptyVAO;
 };

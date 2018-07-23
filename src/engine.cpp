@@ -135,6 +135,8 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _models, _reflectionPass);
 		}
 
+		
+
 		{ // Lighting pass to reconstruct scene.
 			_lightingPass->useProgram();
 			_lightingPass->setValue(20, 0);
@@ -191,6 +193,23 @@ int Engine::run() {
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->renderParticles(_screen.get(), _particlePass, _particleSystem->getParticles());
+		}
+
+		{	// Skybox
+			_skyboxPass->useProgram();
+			glm::mat4 v = _camera.getView();
+			v[3][0] = 0;
+			v[3][1] = 0;
+			v[3][2] = 0;
+			_skyboxPass->setValue(1, v);
+			_skyboxPass->setValue(2, _camera.getProj());
+			_skyboxPass->setValue(10, 0);
+			//glBindTexture(GL_TEXTURE_CUBE_MAP, _skyboxCubeMap);
+			
+
+			_renderSkybox();
+			//_renderer->renderSkybox(_screen.get(), _skyboxPass);
+
 		}
 
 		// Uncomment when screen-space.
@@ -313,6 +332,11 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/octreePass.frag")
 		.finalize();
 
+	_skyboxPass = new ShaderProgram("Skybox Pass");
+	_skyboxPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/skyboxPass.vert")
+		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/skyboxPass.frag")
+		.finalize();
+
 	_initWorld();
 }
 
@@ -326,6 +350,18 @@ void Engine::_initializeGL() {
 
 void Engine::_initWorld() {
 	_testTexture = _textureLoader->loadTexture("assets/textures/eroth.png");
+
+	_initSkybox();
+	//std::string skyboxFiles[6] = { "right", "left", "top", "bottom", "back", "front" };
+	std::vector<std::string> skyboxFiles;
+	skyboxFiles.push_back("right.png");
+	skyboxFiles.push_back("left.png");
+	skyboxFiles.push_back("top.png");
+	skyboxFiles.push_back("bottom.jpg");
+	skyboxFiles.push_back("back.png");
+	skyboxFiles.push_back("front.png");
+	_skyboxCubeMap = _textureLoader->loadCubeMap(skyboxFiles);
+	
 	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
 		.addTexture(0, Texture::TextureFormat::RGB32f, _screen->getWidth(), _screen->getHeight())
@@ -387,4 +423,78 @@ void Engine::_initWorld() {
 	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
 	
 	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+}
+
+void Engine::_initSkybox() {
+	float SIZE = 500.f;
+	GLfloat skyboxVertices[] = {
+		-SIZE,  SIZE, -SIZE,
+		-SIZE, -SIZE, -SIZE,
+		SIZE, -SIZE, -SIZE,
+		SIZE, -SIZE, -SIZE,
+		SIZE,  SIZE, -SIZE,
+		-SIZE,  SIZE, -SIZE,
+
+		-SIZE, -SIZE,  SIZE,
+		-SIZE, -SIZE, -SIZE,
+		-SIZE,  SIZE, -SIZE,
+		-SIZE,  SIZE, -SIZE,
+		-SIZE,  SIZE,  SIZE,
+		-SIZE, -SIZE,  SIZE,
+
+		SIZE, -SIZE, -SIZE,
+		SIZE, -SIZE,  SIZE,
+		SIZE,  SIZE,  SIZE,
+		SIZE,  SIZE,  SIZE,
+		SIZE,  SIZE, -SIZE,
+		SIZE, -SIZE, -SIZE,
+
+		-SIZE, -SIZE,  SIZE,
+		-SIZE,  SIZE,  SIZE,
+		SIZE,  SIZE,  SIZE,
+		SIZE,  SIZE,  SIZE,
+		SIZE, -SIZE,  SIZE,
+		-SIZE, -SIZE,  SIZE,
+
+		-SIZE,  SIZE, -SIZE,
+		SIZE,  SIZE, -SIZE,
+		SIZE,  SIZE,  SIZE,
+		SIZE,  SIZE,  SIZE,
+		-SIZE,  SIZE,  SIZE,
+		-SIZE,  SIZE, -SIZE,
+
+		-SIZE, -SIZE, -SIZE,
+		-SIZE, -SIZE,  SIZE,
+		SIZE, -SIZE, -SIZE,
+		SIZE, -SIZE, -SIZE,
+		-SIZE, -SIZE,  SIZE,
+		SIZE, -SIZE,  SIZE
+	};
+
+	glGenVertexArrays(1, &_skyboxVAO);
+	glGenBuffers(1, &_skyboxVBO);
+	glBindVertexArray(_skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, _skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+	glBindVertexArray(0);
+}
+
+void Engine::_renderSkybox() {
+	glViewport(0, 0, _screen->getWidth(), _screen->getHeight());
+	glClearColor(0, 0, 0, 1.0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDepthFunc(GL_LEQUAL);
+	glCullFace(GL_NONE);
+
+	glBindVertexArray(_skyboxVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, _skyboxCubeMap);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+
+	glCullFace(GL_BACK);
+	glDepthFunc(GL_LESS);
 }

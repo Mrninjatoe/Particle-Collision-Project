@@ -170,3 +170,5 @@ Mesh* MeshLoader::getCube() {
 
 	return new Mesh(vertices, indices, false);
 }
+
+

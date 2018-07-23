@@ -101,6 +101,7 @@ public:
 
 	Texture(const TextureFormat format, glm::vec2 size);
 	Texture(const std::string& path);
+	Texture(std::string files[6]);
 	~Texture();
 
 	void setData(const glm::vec2& size, void* data, glm::vec2 offset = glm::vec2(0)) {
@@ -124,8 +125,8 @@ private:
 		glGenTextures(1, &_texture);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture);
-
 		glTexImage2D(GL_TEXTURE_2D, 0, toGLInternal(_format), _size.x, _size.y, 0, toGLBase(_format), toGLDataType(_format), pixels);
+		
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

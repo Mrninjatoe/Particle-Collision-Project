@@ -87,6 +87,17 @@ void GLRenderer::render(Window * window, std::vector<Model>& models, ShaderProgr
 	}
 }
 
+
+
+void GLRenderer::renderSkybox(GLuint skyboxTexture) {
+	glDepthFunc(GL_LEQUAL);
+	glBindVertexArray(_skybox->getVAO());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS);
+}
+
 void GLRenderer::renderParticles(Window * window, ShaderProgram * shader, std::vector<ParticleSystem::Particle>& particles) {
 	glViewport(0, 0, window->getWidth(), window->getHeight());
 	glClearColor(0.1, 0.1, 0.1, 1.0f);

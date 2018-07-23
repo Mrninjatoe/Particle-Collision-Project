@@ -26,6 +26,21 @@ Texture::Texture(const std::string& path) {
 	}
 }
 
+Texture::Texture(std::string files[6]) {
+	glGenTextures(6, &_texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, _texture);
+	
+	for (int i = 0; i < files->length(); i++) {
+		std::string path = files[i] + ".png";
+		SDL_Surface* surface = IMG_Load(path.c_str());
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+}
+
 Texture::~Texture() {
 	
 }
