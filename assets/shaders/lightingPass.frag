@@ -25,7 +25,8 @@ layout(location = 21) uniform sampler2D normals;
 layout(location = 22) uniform sampler2D albedo;
 layout(location = 23) uniform sampler2D depth;
 layout(location = 24) uniform int nrOfLights;
-layout(location = 25) uniform PointLight pointLights[MAX_LIGHTS];
+layout(location = 25) uniform sampler2D octreeTest;
+layout(location = 30) uniform PointLight pointLights[MAX_LIGHTS];
 
 vec3 calcPointLight(PointLight light, vec3 pos, vec3 normal, vec4 objectColor){
 	float distance = length(light.pos - pos);
@@ -61,10 +62,8 @@ void main(){
 		result += calcPointLight(pointLights[i], pos, normal, color);
 	}
 	result += color.xyz * 0.1f;
-	//fragColor = vec4(1) * z_b;
-	//fragColor = vec4(normal, 1) * z_e;
-	//fragColor = vec4(normal, 1);
-	fragColor = vec4(result, 0);
+
+	//fragColor = vec4(result, 0);
+	fragColor = texture(octreeTest, vUV.xy);
 	gl_FragDepth = z_b;
-	//fragColor = vec4(1) * z_e;
 }

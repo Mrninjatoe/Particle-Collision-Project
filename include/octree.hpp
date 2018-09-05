@@ -3,6 +3,7 @@
 #include <queue>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
+#include <list>
 #include "shaderprogram.hpp"
 #include "mesh.hpp"
 #define MAX_DEPTH 5
@@ -19,10 +20,9 @@ struct Octree {
 		Box region; // 48 bytes
 		glm::ivec4 info; // Node information: x = nrOfTriangles, y = number of active children, z = is node a leaf node? 
 		glm::ivec4 triangleRefs[2048]; // 
-		glm::ivec4 childrenIdx[8];		//
 	};
 
-	void getNodes(Octree* curr, std::vector<Node>& nodes);
+	void getNodes(Octree* curr, std::vector<Node>& nodes, std::list<Octree*> toProcess);
 	
 
 	Box region;

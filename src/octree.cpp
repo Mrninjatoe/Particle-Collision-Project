@@ -31,14 +31,15 @@ Octree::~Octree() {
 }
 
 void Octree::buildTree() {
-	// are there any more objects to contain?
+	// are there any more triangles to contain?
 	if (triangles.size() < 1) {
 		printf("No triangles\n", triangles.size());
 		return;
 	}
 	
 	if (depth == MAX_DEPTH) {
-		isLeaf = true;
+		isLeaf = 1;
+		treeBuilt = true;
 		return;
 	}
 
@@ -101,7 +102,10 @@ void Octree::renderOctree(ShaderProgram* shader, Octree* current, Mesh* box) {
 	if (current->treeBuilt) {
 		shader->setValue(1, glm::vec3((current->region.max + current->region.min) * 0.5f));
 		shader->setValue(2, glm::scale(glm::vec3(current->region.max - current->region.min)));
-		shader->setValue(9, glm::vec4(0.3f, 0.86f, 0.39f, 1));
+		if (current->isLeaf == 1)
+			shader->setValue(9, glm::vec4(0, 0, 1, 1));
+		else
+			shader->setValue(9, glm::vec4(0.3f, 0.86f, 0.39f, 1));
 		glLineWidth(1.5);
 		glDrawElements(GL_LINES, box->getIndices().size(), GL_UNSIGNED_INT, nullptr);
 		for (int i = 0; i < current->trisIndices.size(); i++) {
@@ -118,29 +122,33 @@ void Octree::getNrOfNodes(Octree* curr, int& count) {
 		count++;
 	}
 	if (curr->isLeaf) {
-		count++;
-		//printf("Number of triangles at depth %i for leaf node[%i]: %i\n", curr->depth, curr->id, curr->triangles.size());
 		return;
 	}
 }
 
-void Octree::getNodes(Octree* curr, std::vector<Node>& nodes) {
+void Octree::getNodes(Octree* curr, std::vector<Node>& nodes, std::list<Octree*> toProcess) {
 	Node temp;
 	temp.info.x = curr->triangleIDs.size();
 	temp.info.y = curr->trisIndices.size();
 	temp.info.z = curr->isLeaf;
 	temp.info.w = curr->depth;
 	temp.region = curr->region;
-	
-	for (int i = 0; i < curr->trisIndices.size(); i++) {
-		temp.childrenIdx[i].x = curr->trisIndices[i];
+	nodes.push_back(temp);
+	if (!toProcess.empty()) {
+		toProcess.pop_front();
 	}
+
+	for (int i = 0; i < curr->trisIndices.size(); i++) {
+		toProcess.push_back(curr->children[curr->trisIndices[i]]);
+	}
+	
+	getNodes(toProcess.front(), nodes, toProcess);
 	
 	for (int i = 0; i < curr->triangleIDs.size(); i++) {
 		temp.triangleRefs[i].x = curr->triangleIDs[i];
 	}
-	nodes.push_back(temp);
-	for (int i = 0; i < curr->trisIndices.size(); i++) {
-		getNodes(curr->children[curr->trisIndices[i]], nodes);
-	}
+	//nodes.push_back(temp);
+	//for (int i = 0; i < curr->trisIndices.size(); i++) {
+	//	getNodes(curr->children[curr->trisIndices[i]], nodes, toProcess);
+	//}
 }

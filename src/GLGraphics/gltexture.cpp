@@ -1,15 +1,15 @@
 #include "GLGraphics/gltexture.hpp"
 // Private functions are in the header.
 
-Texture::Texture(const TextureFormat format, glm::vec2 size) {
+Texture::Texture(const TextureFormat format, glm::ivec2 size) {
 	_format = format;
 	_size = size;
-	_setData(nullptr);
+	_setData(nullptr, GL_NEAREST);
 }
 
 Texture::Texture(const std::string& path) {
 	printf("%s\n\n", path.c_str());
-	std::string temp = "assets/textures/"+ path;
+	std::string temp = "assets/textures/" + path;
 	SDL_Surface* surface = IMG_Load(temp.c_str());
 	if (!surface)
 		printf("Texture %s failed to load! SDL_image Error: %s\n", temp.c_str(), SDL_GetError());
@@ -22,7 +22,7 @@ Texture::Texture(const std::string& path) {
 			surface = newSurf;
 			_format = TextureFormat::RGBA8;
 			_size = glm::vec2(surface->w, surface->h);
-			_setData(surface->pixels);
+			_setData(surface->pixels, GL_LINEAR);
 			SDL_FreeSurface(surface);
 		}
 	}

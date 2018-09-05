@@ -77,8 +77,6 @@ struct Box {
 		this->min = glm::vec4(0, 0, 0, 1);
 		this->max = glm::vec4(0, 0, 0, 1);
 	}
-
-	glm::vec4 color = { 1,1,1,0 };
 	glm::vec4 min;
 	glm::vec4 max;
 };

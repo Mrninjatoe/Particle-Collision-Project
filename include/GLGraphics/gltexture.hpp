@@ -99,14 +99,16 @@ public:
 		return translate[format];
 	}
 
-	Texture(const TextureFormat format, glm::vec2 size);
+	Texture(const TextureFormat format, glm::ivec2 size);
 	Texture(const std::string& path);
 	Texture(std::string files[6]);
 	~Texture();
 
-	void setData(const glm::vec2& size, void* data, glm::vec2 offset = glm::vec2(0)) {
-		// Not functioning probperlyl.
-		glTextureSubImage2D(_texture, 0, offset.x, offset.y, size.x, size.y, static_cast<GLenum>(_format), toGLDataType(_format), data);
+	void setData(const glm::ivec2& size, const glm::ivec2& offset, const void* data) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _texture);
+		if (data != NULL)
+			glTexSubImage2D(GL_TEXTURE_2D, 0, offset.x, offset.y, size.x, size.y, toGLBase(_format), toGLDataType(_format), data);
 	}
 
 	void bind(size_t pos) {
@@ -118,19 +120,19 @@ public:
 
 private:
 	GLuint _texture;
-	glm::vec2 _size;
+	glm::ivec2 _size;
 	TextureFormat _format;
 
-	void _setData(void* pixels) {
+	void _setData(void* pixels, GLenum filter) {
 		glGenTextures(1, &_texture);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, toGLInternal(_format), _size.x, _size.y, 0, toGLBase(_format), toGLDataType(_format), pixels);
 		
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 	}
 };

@@ -8,7 +8,5 @@ layout(location = 2) uniform mat4 projectionMatrix;
 
 void main(){
 	textureCoords = position;
-	gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.0); 
-	
-	
+	gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.0); 	
 }

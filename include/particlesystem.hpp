@@ -38,10 +38,12 @@ public:
 	void update(float delta, ShaderProgram* shader);
 	void fixOctreeBuffers(Octree* octree);
 	ParticleMethod getMethod() { return _collisionMethod; }
+	std::shared_ptr<Texture> getTexture() { return _offsetTexture;}
 private:
 	std::vector<Emitter> _emitters;
 	std::vector<Particle> _particles;
 	std::vector<ShaderStorageBuffer*> _ssbos;
+	std::shared_ptr<Texture> _offsetTexture;
 	int _nrOfParticles;
 	ParticleMethod _collisionMethod;
 

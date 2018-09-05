@@ -136,8 +136,6 @@ int Engine::run() {
 			_renderer->render(_screen.get(), _models, _reflectionPass);
 		}
 
-		
-
 		{ // Lighting pass to reconstruct scene.
 			_lightingPass->useProgram();
 			_lightingPass->setValue(17, _camera.position);
@@ -148,7 +146,8 @@ int Engine::run() {
 			_lightingPass->setValue(22, 2);
 			_lightingPass->setValue(23, 3);
 			_lightingPass->setValue(24, (int)_pointLights.size());
-			int shaderPos = 25;
+			_lightingPass->setValue(25, 4);
+			int shaderPos = 30;
 			for (int i = 0; i < _pointLights.size(); i++) {
 				_lightingPass->setValue(shaderPos++, _pointLights[i].position);
 				_lightingPass->setValue(shaderPos++, _pointLights[i].color);
@@ -160,32 +159,35 @@ int Engine::run() {
 			(*_deferredFBO)[1]->bind(1);
 			(*_deferredFBO)[2]->bind(2);
 			_deferredFBO->bindDepth(3);
+			_particleSystem->getTexture()->bind(4);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
 		}
-		
-		_computeShader->useProgram();
-		switch (_particleSystem->getMethod()) {
-		case ParticleSystem::Octree3DCollision: {
-			_computeShader->setValue(15, _triangleCount);
-			_computeShader->setValue(16, _nrOfNodes);
-			_computeShader->setValue(17, 5);
-			break;
+
+		{ // Deciding on collision particle method.
+			_computeShader->useProgram();
+			switch (_particleSystem->getMethod()) {
+			case ParticleSystem::Octree3DCollision: {
+				_computeShader->setValue(15, _triangleCount);
+				_computeShader->setValue(16, _nrOfNodes);
+				_computeShader->setValue(17, 5);
+				break;
 			}
-		case ParticleSystem::ScreeSpaceParticleCollision: {
-			_computeShader->setValue(8, _camera.getView());
-			_computeShader->setValue(9, _camera.getProj());
-			_computeShader->setValue(10, _camera.getReflectedView());
-			_computeShader->setValue(20, 0);
-			_computeShader->setValue(21, 1);
-			_computeShader->setValue(22, 2);
-			_computeShader->setValue(23, 3);
-			_deferredFBO->bindDepth(0);
-			(*_deferredFBO)[1]->bind(1);
-			_reflectedFBO->bindDepth(2);
-			(*_reflectedFBO)[0]->bind(3);
-			break;
+			case ParticleSystem::ScreeSpaceParticleCollision: {
+				_computeShader->setValue(8, _camera.getView());
+				_computeShader->setValue(9, _camera.getProj());
+				_computeShader->setValue(10, _camera.getReflectedView());
+				_computeShader->setValue(20, 0);
+				_computeShader->setValue(21, 1);
+				_computeShader->setValue(22, 2);
+				_computeShader->setValue(23, 3);
+				_deferredFBO->bindDepth(0);
+				(*_deferredFBO)[1]->bind(1);
+				_reflectedFBO->bindDepth(2);
+				(*_reflectedFBO)[0]->bind(3);
+				break;
+			}
 			}
 		}
 		_particleSystem->update(deltaTime, _computeShader);
@@ -196,9 +198,7 @@ int Engine::run() {
 			_particlePass->useProgram();
 			_particlePass->setValue(6, _camera.getView());
 			_particlePass->setValue(7, _camera.getProj());
-			_particlePass->setValue(20, 0);
 			_particlePass->setValue(21, forward);
-			_testTexture->bind(0);
 			for (int i = 0; i < 3; i++) {
 				ssbos[i]->bindBase(i);
 			}
@@ -330,9 +330,9 @@ void Engine::_init() {
 	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
 		.finalize();
 
-	//_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
-	//_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
-	//	.finalize();
+	/*_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();*/
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -362,8 +362,8 @@ void Engine::_initializeGL() {
 }
 
 void Engine::_initWorld() {
-	_testTexture = _textureLoader->loadTexture("assets/textures/eroth.png");
-
+	//_testTexture = _textureLoader->loadTexture("sleeping_pupper.png");
+	
 	_initSkybox();
 	//std::string skyboxFiles[6] = { "right", "left", "top", "bottom", "back", "front" };
 	std::vector<std::string> skyboxFiles;
@@ -375,7 +375,16 @@ void Engine::_initWorld() {
 	skyboxFiles.push_back("front.png");
 	_skyboxCubeMap = _textureLoader->loadCubeMap(skyboxFiles);
 	
-	//_testTexture = _textureLoader->loadTexture("king_vigor.png");
+	//_testTexture = std::make_shared<Texture>(Texture::RG16f, glm::ivec2(_screen->getWidth(), _screen->getHeight()));
+	//glm::vec2* colors = new glm::vec2[1280];
+	//for (int i = 0; i < 1280; i++) {
+	//	colors[i] = glm::vec2(0, 1);
+	//}
+	//for (int i = 0; i < 360; i++) {
+	//	_testTexture->setData(glm::ivec2(640, 1), glm::ivec2(0, i), colors);
+	//}
+
+	//_testTexture->setData(glm::ivec2(0,0), glm::ivec2(1280, 720), colors);
 
 	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
@@ -391,11 +400,7 @@ void Engine::_initWorld() {
 		.finalize();
 
 	_models.push_back(_meshLoader->loadMesh("assets/models/bunny.obj", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0.3f, 0), glm::vec3(1));
-	//_models.push_back(_meshLoader->loadMesh("assets/models/plane.fbx", true));
-	//_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(6)); 
-	//_models.push_back(_meshLoader->loadMesh("assets/models/sponza.obj", true));
-	//_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(0.001));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
 
 	_pointLights.push_back(PointLight(glm::vec3(0.25f, 3.0f, 0.25f), glm::vec3(1,1,1)));
 	_camera.position = glm::vec3(0, 0, 0);
@@ -421,12 +426,8 @@ void Engine::_initWorld() {
 		max = glm::max(max, glm::vec3(model.boundingBox.max));
 	}
 
-	//printf("NUMBER OF MODELS: %zu\n", _models.size());
+	printf("NUMBER OF MODELS: %zu\n", _models.size());
 	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-	_octree->getNrOfNodes(_octree, _nrOfNodes);
-	//printf("%i\n\n", _nrOfNodes);
-	
-	
 
 	_triangleCount = allTriangles.size();
 	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
@@ -497,10 +498,9 @@ void Engine::_renderSkybox() {
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glDepthFunc(GL_LEQUAL);
-	glCullFace(GL_NONE);
+	glDisable(GL_CULL_FACE);
 
 	glBindVertexArray(_skyboxVAO);
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _skyboxCubeMap);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
