@@ -400,7 +400,7 @@ void Engine::_initWorld() {
 		.finalize();
 
 	_models.push_back(_meshLoader->loadMesh("assets/models/bunny.obj", true));
-	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1));
+	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1.0f));
 
 	_pointLights.push_back(PointLight(glm::vec3(0.25f, 3.0f, 0.25f), glm::vec3(1,1,1)));
 	_camera.position = glm::vec3(0, 0, 0);
@@ -425,6 +425,8 @@ void Engine::_initWorld() {
 		min = glm::min(min, glm::vec3(model.boundingBox.min));
 		max = glm::max(max, glm::vec3(model.boundingBox.max));
 	}
+	printf("(%f, %f, %f), (%f, %f, %f)\n", min.x, min.y, min.z,
+	max.x, max.y, max.z);
 
 	printf("NUMBER OF MODELS: %zu\n", _models.size());
 	_octree = new Octree(Box(min, max), allTriangles, 0, 0);

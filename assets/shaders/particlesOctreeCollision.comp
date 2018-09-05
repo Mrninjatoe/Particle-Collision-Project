@@ -50,6 +50,10 @@ layout(location = 16) uniform int NODE_COUNT;
 layout(location = 17) uniform int MAX_DEPTH;
 layout(location = 18) uniform sampler2D nodeTexture;
 
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 bool particleVSAABB(vec3 pPos, float radius, Box aabb){
 	float r2 = radius * radius;
 	float dMin = 0.f;
@@ -103,9 +107,9 @@ void main(){
 
 	ivec2 pixel = ivec2(0,0); // Root
 	bool foundLeaf = false;
+	int depthCounter = 0;
 	if(particleVSAABB(pos.xyz, color.w, nodes[0].region)){
-		bool collHappened = false;
-		while(!foundLeaf){
+		while(!foundLeaf && depthCounter < 6){
 			vec4 parentData = texelFetch(nodeTexture, pixel, 0);
 			pixel = ivec2(parentData.x, parentData.y); // x and y are the offset to the children in the texture.
 			int nodeIndex = 0;
@@ -115,29 +119,30 @@ void main(){
 					pixel.y += (pixel.x / 250);
 					pixel.x %= 250;
 				}
-				if(particleVSAABB(pos.xyz, color.w, nodes[pixel.x + pixel.y * 250].region)){
+				if(particleVSAABB(pos.xyz, color.w, nodes[int(parentData.w) + i].region)){
 					nodeIndex = int(parentData.w) + i;
 					break;
 				}
 			}
 			//vec4 temp = texelFetch(nodeTexture, pixel, 0);
-			if(nodes[pixel.x + pixel.y * 250].info.z == 1){
+			if(nodes[nodeIndex].info.z == 1){
 				foundLeaf = true;
 				break;
 			}
+			depthCounter++;
 		}
 	}
 
 	if(foundLeaf){
-		vel = vec4(0, 0.3f, 0, 1);
+		vel = vec4(0, 2.f, 0, 1);
 		pos += vel * delta;
 		//pos += vec4(n, 1) * 0.01;
 		//vel = vec4(r, 1) * 0.3 + cos(pos * 1e3) * 5e-4;
-		color.xyz = vec3(1,0,0);
+		color.xyz = vec3(rand(vec2(index, candy.x)),rand(vec2(candy.x, index)),rand(vec2(rand(vec2(pos.x, index)), vel.z)));
 	}
 
 
-	vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
+	vel += vec4(0.0, -0.001 * 9.82, 0.0, 1);
 	pos += vel * delta;
 	barrier();
 

@@ -36,8 +36,8 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 }
 
 ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
-	_nrOfParticles = 1024;
-	//_nrOfParticles = 65536;
+	//_nrOfParticles = 1024;
+	_nrOfParticles = 65536;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
@@ -48,7 +48,7 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 		directions.push_back(p.dir = glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), 0));
 				//velocities.push_back(glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), p.pos.a));
 		velocities.push_back(glm::vec4(0, 1, 0, p.pos.a));
-		colors.push_back(p.color = (glm::vec4(1, 0.8431f, 0, 0.1f /*_fRand(0.2f, 0.5f)*/)));
+		colors.push_back(p.color = (glm::vec4(1, 0.8431f, 0, 0.05f /*_fRand(0.2f, 0.5f)*/)));
 		_particles.push_back(p);
 		
 	}
@@ -106,8 +106,8 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 		//		curr->region.max.x, curr->region.max.y, curr->region.max.z);
 		//}
 		
-		printf("Node: %i. isLeaf: %i, depth: %i, stored at pixel: (%i, %i) with number of triangles: %i\n", 
-			nodeCounter, octToNode.info.z, octToNode.info.w, currPixel.x, currPixel.y, octToNode.info.x);
+		//printf("Node: %i. isLeaf: %i, depth: %i, stored at pixel: (%i, %i) with number of triangles: %i\n", 
+		//	nodeCounter, octToNode.info.z, octToNode.info.w, currPixel.x, currPixel.y, octToNode.info.x);
 
 
 		if (curr->trisIndices.size() > 0) {
