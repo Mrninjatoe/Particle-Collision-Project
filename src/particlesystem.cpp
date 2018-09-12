@@ -10,45 +10,45 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
+	std::vector<glm::vec4> spawnPos;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(_fRand(0, 10), 5, _fRand(0, 10), _fRand(3, 9.5f)));
+
+		//positions.push_back(p.pos = glm::vec4(_fRand(0, 10), 5, _fRand(0, 10), 5.f));
+		positions.push_back(p.pos = glm::vec4(_fRand(-1.8, 1.3), 3.f, _fRand(-1, 1), 10.f));
 		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), 0));
 		//velocities.push_back(glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), p.pos.a));
 		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
-		colors.push_back(p.color = (glm::vec4(1, 0.8431f, 0, 0.025 /*_fRand(0.2f, 0.5f)*/)));
+		colors.push_back(p.color = (glm::vec4(1, 1, 1, 0.025f)));
+		spawnPos.push_back(p.pos);
+
 		_particles.push_back(p);
 	}
-
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // Positions
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // Directions
-	//_ssbos.push_back(std::make_shared<ShaderStorageBuffer>(_nrOfParticles * sizeof(glm::vec4))); // color and radius
-	//_ssbos[position]->setData(positions);
-	//_ssbos[direction]->setData(directions);
-	//_ssbos[color]->setData(colors);
 
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
-																			//_setupBuffers();
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, spawnPos));																		//_setupBuffers();
 	_collisionMethod = type;
 }
 
 ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
-	//_nrOfParticles = 1024;
-	_nrOfParticles = 65536;
+	_nrOfParticles = 1024;
+	//_nrOfParticles = 65536;
 	std::vector<glm::vec4> positions;
 	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
+	std::vector<glm::vec4> spawnPos;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(0, 10, 0, _fRand(5, 10)));
+		positions.push_back(p.pos = glm::vec4(_fRand(-1, 1), 3.f, _fRand(-1, 1), 10.f));
 		directions.push_back(p.dir = glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), 0));
-				//velocities.push_back(glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), p.pos.a));
-		velocities.push_back(glm::vec4(0, 1, 0, p.pos.a));
-		colors.push_back(p.color = (glm::vec4(1, 0.8431f, 0, 0.05f /*_fRand(0.2f, 0.5f)*/)));
+		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
+		colors.push_back(p.color = (glm::vec4(1, 1, 1, 0.025f)));
+		spawnPos.push_back(p.pos);
+
 		_particles.push_back(p);
 		
 	}
@@ -58,6 +58,7 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities));
+	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, spawnPos));
 
 	_offsetTexture = std::make_shared<Texture>(Texture::RGBA16f, glm::ivec2(250, 250));
 
@@ -93,7 +94,6 @@ ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> 
 		}
 		octToNode.region = curr->region;
 		nodes.push_back(octToNode);
-
 
 		//printf("Curr pixel: (%i, %i), child offset: (%i, %i), Number of children: %i, 1D: %i.\nMin: (%f, %f, %f), Max: (%f, %f, %f,)\n\n",
 		//	currPixel.x, currPixel.y, childrenOffset.x, 
@@ -145,7 +145,6 @@ ParticleSystem::~ParticleSystem() {
 void ParticleSystem::update(float delta, ShaderProgram* shader) {
 	shader->setValue(6, delta);
 	//shader->setValue(7, glm::vec3(0, 10, 0));
-	shader->setValue(7, glm::vec3(_fRand(-1.8, 1.3), 5, _fRand(-1, 1)));
 
 	switch (_collisionMethod) {
 	case Octree3DCollision:

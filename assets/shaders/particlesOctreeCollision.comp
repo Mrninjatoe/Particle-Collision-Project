@@ -34,17 +34,19 @@ layout (std430, binding = 3) buffer VelocityBuffer{
 	vec4 velocities[];
 };
 
-layout (std430, binding = 4) readonly buffer NodeBuffer{
+layout (std430, binding = 4) buffer SpawnPosBuffer{
+	vec4 spawnPos[];
+};
+
+layout (std430, binding = 5) readonly buffer NodeBuffer{
 	Node nodes[];
 };
 
-layout (std430, binding = 5) readonly buffer TriangleBuffer{
+layout (std430, binding = 6) readonly buffer TriangleBuffer{
 	Triangle triangles[];
 };
 
-
 layout(location = 6) uniform float delta;
-layout(location = 7) uniform vec3 spawnPos;
 layout(location = 15) uniform int TRIANGLE_COUNT;
 layout(location = 16) uniform int NODE_COUNT;
 layout(location = 17) uniform int MAX_DEPTH;
@@ -64,29 +66,18 @@ bool particleVSAABB(vec3 pPos, float radius, Box aabb){
 	}
 
 	return dMin <= r2;
+}
 
-	//float dist_squared = radius * radius;
-	//if(pPos.x < aabb.min.x) 
-	//	dist_squared -= sqrt(pPos.x - aabb.min.x);
-	//else if(pPos.x > aabb.max.x) 
-	//	dist_squared -= sqrt(pPos.x - aabb.max.x);
-	//
-	//if(pPos.y < aabb.min.y) 
-	//	dist_squared -= sqrt(pPos.y - aabb.min.y);
-	//else if(pPos.y > aabb.max.y)
-	//	dist_squared -= sqrt(pPos.y - aabb.max.y);
-	//
-	//if(pPos.z < aabb.min.z) 
-	//	dist_squared -= sqrt(pPos.z - aabb.min.z);
-	//else if(pPos.z > aabb.max.z)
-	//	dist_squared -= sqrt(pPos.z - aabb.max.z);
-	//
-	//return dist_squared > 0;
-	
-	//vec3 closestPointInAABB = min(max(pPos, aabb.min.xyz), aabb.max.xyz);
-	//float distSquared = sqrt(length(closestPointInAABB - pPos));
-	//
-	//return distSquared < (radius * radius);
+bool particleVSTriangle(vec3 pPos, vec3 pVel, float radius, Triangle tri){
+	bool collHappened = false;
+	vec3 e0 = tri.verts[0].xyz - pPos;
+	vec3 e1 = tri.verts[1].xyz - pPos;
+	vec3 e2 = tri.verts[2].xyz - pPos;
+	vec3 v = cross(e1 - e0, e2 - e0);
+	float d = dot(e0, v);
+	float e = dot(v, v);
+
+	return d * d < radius * radius * e;
 }
 
 void main(){
@@ -99,20 +90,20 @@ void main(){
 	vec2 candy = vec2(pos.a, vel.a); 
 	
 	if(candy.x < 0) {
-		pos.xyz = spawnPos;
-		color.xyz = vec3(1, 0.8431f, 0);
+		pos = spawnPos[index];
 		vel.xyz = vec3(0);
 		candy.x = candy.y;
+		color.xyz = vec3(1);
 	}
 
 	ivec2 pixel = ivec2(0,0); // Root
 	bool foundLeaf = false;
 	int depthCounter = 0;
+	int nodeIndex = 0;
 	if(particleVSAABB(pos.xyz, color.w, nodes[0].region)){
 		while(!foundLeaf && depthCounter < 6){
 			vec4 parentData = texelFetch(nodeTexture, pixel, 0);
 			pixel = ivec2(parentData.x, parentData.y); // x and y are the offset to the children in the texture.
-			int nodeIndex = 0;
 			for(int i = 0; i < int(parentData.z); i++){
 				if(i > 0){
 					pixel.x += 1;
@@ -124,7 +115,6 @@ void main(){
 					break;
 				}
 			}
-			//vec4 temp = texelFetch(nodeTexture, pixel, 0);
 			if(nodes[nodeIndex].info.z == 1){
 				foundLeaf = true;
 				break;
@@ -133,20 +123,33 @@ void main(){
 		}
 	}
 
+	bool triFound = false;
 	if(foundLeaf){
-		vel = vec4(0, 2.f, 0, 1);
-		pos += vel * delta;
-		//pos += vec4(n, 1) * 0.01;
-		//vel = vec4(r, 1) * 0.3 + cos(pos * 1e3) * 5e-4;
-		color.xyz = vec3(rand(vec2(index, candy.x)),rand(vec2(candy.x, index)),rand(vec2(rand(vec2(pos.x, index)), vel.z)));
+		Node leaf = nodes[nodeIndex];
+		for(int i = 0; i < leaf.info.x; i++){
+			Triangle currTri = triangles[leaf.triangleRefs[i].x];
+			if(particleVSTriangle(pos.xyz, vel.xyz, color.w, currTri)){
+				vec3 p0 = currTri.verts[0].xyz;
+				vec3 p1 = currTri.verts[1].xyz;
+				vec3 p2 = currTri.verts[2].xyz;
+				vec3 e1 = p1 - p0;
+				vec3 e2 = p2 - p0;
+				vec3 n = normalize(cross(e1, e2));
+				vec3 r = reflect(normalize(vel.xyz), n);
+				vel += vec4(r, 1);
+				triFound = true;
+				break;
+			}
+		}
+		color.xyz = vec3(0,1,1);
+		//color.xyz = vec3(rand(vec2(index, candy.x)),rand(vec2(candy.x, index)),rand(vec2(rand(vec2(pos.x, index)), vel.z)));
 	}
-
-
-	vel += vec4(0.0, -0.001 * 9.82, 0.0, 1);
+	
+	vel += vec4(0.0, -1, 0.0, 1) * delta;
 	pos += vel * delta;
-	barrier();
+	//barrier();
 
-	candy.x -= 1.0f * delta;
+	//candy.x -= delta;
 	pos.a = candy.x;
 	vel.a = candy.y;
 

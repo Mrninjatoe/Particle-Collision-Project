@@ -30,16 +30,22 @@ int Engine::run() {
 
 	Uint64 NOW = SDL_GetPerformanceCounter();
 	Uint64 LAST = 0;
-	double deltaTime = 0;
+	double deltaTime = 0.0;
 
 	bool quit = false;
 	bool octreeVisible = false;
-
+	float timeStep = 1.f;
+	float maxStep = 150.f;
+	double accumulator = 0.f;
+	int counter = 0;
+	float dt = 1.0f / 100.f;
 	while (!quit) {
 		LAST = NOW;
 		NOW = SDL_GetPerformanceCounter();
-
+		
 		deltaTime = ((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency()) * 0.001;
+
+
 
 		while (SDL_PollEvent(&event)) {
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
@@ -146,7 +152,6 @@ int Engine::run() {
 			_lightingPass->setValue(22, 2);
 			_lightingPass->setValue(23, 3);
 			_lightingPass->setValue(24, (int)_pointLights.size());
-			_lightingPass->setValue(25, 4);
 			int shaderPos = 30;
 			for (int i = 0; i < _pointLights.size(); i++) {
 				_lightingPass->setValue(shaderPos++, _pointLights[i].position);
@@ -159,7 +164,6 @@ int Engine::run() {
 			(*_deferredFBO)[1]->bind(1);
 			(*_deferredFBO)[2]->bind(2);
 			_deferredFBO->bindDepth(3);
-			_particleSystem->getTexture()->bind(4);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			_renderer->render(_screen.get(), _lightingPass);
@@ -190,7 +194,14 @@ int Engine::run() {
 			}
 			}
 		}
-		_particleSystem->update(deltaTime, _computeShader);
+
+		while (accumulator >= dt) {
+			accumulator -= dt;
+			_particleSystem->update(dt, _computeShader);
+			counter++;
+		}
+		accumulator += deltaTime;
+
 		{ // Particle pass.
 			glm::mat4 v = _camera.getView();
 			glm::vec3 forward = glm::vec3(v[0][2], v[1][2], v[2][2]);
@@ -199,6 +210,8 @@ int Engine::run() {
 			_particlePass->setValue(6, _camera.getView());
 			_particlePass->setValue(7, _camera.getProj());
 			_particlePass->setValue(21, forward);
+			//_particlePass->setValue(22, 0);
+			//_testTexture->bind(0);
 			for (int i = 0; i < 3; i++) {
 				ssbos[i]->bindBase(i);
 			}
@@ -326,13 +339,13 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
-	_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
+	/*_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
 	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
-		.finalize();
-
-	/*_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
 		.finalize();*/
+
+	_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
+	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+		.finalize();
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -362,7 +375,7 @@ void Engine::_initializeGL() {
 }
 
 void Engine::_initWorld() {
-	//_testTexture = _textureLoader->loadTexture("sleeping_pupper.png");
+	_testTexture = _textureLoader->loadTexture("Ollie.jpg");
 	
 	_initSkybox();
 	//std::string skyboxFiles[6] = { "right", "left", "top", "bottom", "back", "front" };
@@ -374,17 +387,6 @@ void Engine::_initWorld() {
 	skyboxFiles.push_back("back.png");
 	skyboxFiles.push_back("front.png");
 	_skyboxCubeMap = _textureLoader->loadCubeMap(skyboxFiles);
-	
-	//_testTexture = std::make_shared<Texture>(Texture::RG16f, glm::ivec2(_screen->getWidth(), _screen->getHeight()));
-	//glm::vec2* colors = new glm::vec2[1280];
-	//for (int i = 0; i < 1280; i++) {
-	//	colors[i] = glm::vec2(0, 1);
-	//}
-	//for (int i = 0; i < 360; i++) {
-	//	_testTexture->setData(glm::ivec2(640, 1), glm::ivec2(0, i), colors);
-	//}
-
-	//_testTexture->setData(glm::ivec2(0,0), glm::ivec2(1280, 720), colors);
 
 	_deferredFBO = std::shared_ptr<GLFrameBuffer>(new GLFrameBuffer());
 	_deferredFBO->bind()
@@ -403,9 +405,9 @@ void Engine::_initWorld() {
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1.0f));
 
 	_pointLights.push_back(PointLight(glm::vec3(0.25f, 3.0f, 0.25f), glm::vec3(1,1,1)));
-	_camera.position = glm::vec3(0, 0, 0);
+	_camera.position = glm::vec3(3, 1.5f, 3);
 
-	glm::vec3 min = {100, 100, 100};
+	/*glm::vec3 min = {100, 100, 100};
 	glm::vec3 max = {-100, -100, -100};
 	std::vector<Mesh::Triangle> allTriangles;
 	int id = 0;
@@ -432,10 +434,10 @@ void Engine::_initWorld() {
 	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
 
 	_triangleCount = allTriangles.size();
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);*/
 	
 
-	//_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }
 
 void Engine::_initSkybox() {

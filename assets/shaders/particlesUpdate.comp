@@ -18,10 +18,13 @@ layout (std430, binding = 3) buffer VelocityBuffer{
 	vec4 velocities[];
 };
 
+layout (std430, binding = 4) buffer spawnPosBuffer {
+	vec4 spawnPos[];
+};
+
 //bind depth and camera
 
 layout(location = 6) uniform float delta;
-layout(location = 7) uniform vec3 spawnPos;
 layout(location = 8) uniform mat4 v;
 layout(location = 9) uniform mat4 p;
 layout(location = 10) uniform mat4 rv;
@@ -60,13 +63,20 @@ void main(){
 	vec2 candy = vec2(pos.a, vel.a); 
 	
 	if(candy.x < 0) {
-		pos.xyz = spawnPos;
+		pos = spawnPos[index];
 		vel.xyz = vec3(0);
 		candy.x = candy.y;
 		color.xyz = vec3(1);
 	}
 
+	vel += vec4(0.0, -0.008, 0.0, 0.0);
+	pos += vel * 0.04;
+
+	//vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
+	//pos += vel * delta;
+
 	vec4 viewPos = v * vec4(vec3(pos.xyz), 1);
+	viewPos -= color.a;
 	vec4 clipPos = p * viewPos;
 
 	vec4 rViewPos = rv * vec4(vec3(pos.xyz), 1);
@@ -84,23 +94,22 @@ void main(){
 		vec3 n = texture(normals, proj0).xyz;
 		vec3 r = reflect(normalize(vel.xyz), n);
 	
-		pos += vec4(n, 1) * 0.01;
-		vel = vec4(r, 1) * 0.3 + cos(pos * 1e3) * 5e-4;
+		pos += vec4(n, 1) * 1e-4;
+		vel = vec4(r, 1) * 0.3 + cos(pos * 1e5) * 5e-4;
 		color.xyz = vec3(1,0,0);
 	}
 	else if(proj1.x > 0.0 && proj1.x < 1.0 && proj1.y > 0.0 && proj1.y < 1.0 && 
-		rBufferDepth.z < -1e-2 && rBufferDepth.z > rViewPos.z && rBufferDepth.z < (rViewPos.z + 0.1)) {
+		rBufferDepth.z < -1e-2 && rBufferDepth.z > rViewPos.z + color.a && rBufferDepth.z < (rViewPos.z + 0.1)) {
 
 		vec3 n = texture(rNormals, proj1).xyz;
 		vec3 r = reflect(normalize(vel.xyz), n);
 		
-		//pos += n * 1e-4;
-		pos += vec4(n, 1) * 0.01;
-		vel = vec4(r, 1) * 0.03 + cos(pos * 1e3) * 5e-4;
+		pos += vec4(n, 1) * 1e-4;
+		//pos += vec4(n, 1) * 0.01;
+		vel = vec4(r, 1) * 0.3 + cos(pos * 1e5) * 5e-4;
 		color.xyz = vec3(0,1,0);
 	}
-	vel += vec4(0.0, -0.005 * 9.82, 0.0, 1);
-	pos += vel * delta;
+	
 
 	barrier();
 	candy.x -= 1.0f * delta;
