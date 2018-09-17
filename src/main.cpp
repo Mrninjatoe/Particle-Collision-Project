@@ -3,7 +3,7 @@
 #include <time.h>
 
 int main(int argcc, char* argv[]) {
-	srand(1337);
+	srand(1);
 	printf("Booting up project!\n");
 	return Engine::getInstance()->run();
 }

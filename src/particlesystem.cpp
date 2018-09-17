@@ -3,21 +3,16 @@
 #define NUMBER_OF_EMITTERS 1
 
 ParticleSystem::ParticleSystem(ParticleMethod type) {
-	//_nrOfParticles = 1024;
-	_nrOfParticles = 65536;
+	_nrOfParticles = 1024;
+	//_nrOfParticles = 65536;
 	//_nrOfParticles = 524288;
 	std::vector<glm::vec4> positions;
-	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
 	std::vector<glm::vec4> spawnPos;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-
-		//positions.push_back(p.pos = glm::vec4(_fRand(0, 10), 5, _fRand(0, 10), 5.f));
 		positions.push_back(p.pos = glm::vec4(_fRand(-1.8, 1.3), 3.f, _fRand(-1, 1), 10.f));
-		directions.push_back(p.dir = glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), 0));
-		//velocities.push_back(glm::vec4(_fRand(-1, 1), -1, _fRand(-1, 1), p.pos.a));
 		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
 		colors.push_back(p.color = (glm::vec4(1, 1, 1, 0.025f)));
 		spawnPos.push_back(p.pos);
@@ -26,7 +21,6 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 	}
 
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
-	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, spawnPos));																		//_setupBuffers();
@@ -35,27 +29,24 @@ ParticleSystem::ParticleSystem(ParticleMethod type) {
 
 ParticleSystem::ParticleSystem(ParticleMethod type, std::vector<Mesh::Triangle> triangles, Octree* rootOct) {
 	_nrOfParticles = 1024;
+	//_nrOfParticles = 2048;
 	//_nrOfParticles = 65536;
 	std::vector<glm::vec4> positions;
-	std::vector<glm::vec4> directions;
 	std::vector<glm::vec4> colors;
 	std::vector<glm::vec4> velocities;
 	std::vector<glm::vec4> spawnPos;
 	for (int i = 0; i < _nrOfParticles; i++) {
 		Particle p;
-		positions.push_back(p.pos = glm::vec4(_fRand(-1, 1), 3.f, _fRand(-1, 1), 10.f));
-		directions.push_back(p.dir = glm::vec4(_fRand(1, 1), 1, _fRand(1, 1), 0));
+		positions.push_back(p.pos = glm::vec4(_fRand(-1.8, 1.3), 3.f, _fRand(-1, 1), 10.f));
 		velocities.push_back(glm::vec4(0, -1, 0, p.pos.a));
 		colors.push_back(p.color = (glm::vec4(1, 1, 1, 0.025f)));
 		spawnPos.push_back(p.pos);
 
 		_particles.push_back(p);
-		
 	}
 	
 	// Setting up particle buffers and triangles.
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, positions)); // Positions
-	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, directions)); // Directions
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, colors)); // color and radius
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, velocities));
 	_ssbos.push_back(new ShaderStorageBuffer(GL_DYNAMIC_DRAW, spawnPos));
@@ -154,16 +145,15 @@ void ParticleSystem::update(float delta, ShaderProgram* shader) {
 			_ssbos[i]->bindBase(i);
 		}
 		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
-		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
 	case ScreeSpaceParticleCollision:
 		for (int i = 0; i < _ssbos.size(); i++) {
 			_ssbos[i]->bindBase(i);
 		}
 		glDispatchCompute((GLint)_nrOfParticles / 128, 1, 1);
-		//glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		break;
 	}
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void ParticleSystem::fixOctreeBuffers(Octree* octree) {

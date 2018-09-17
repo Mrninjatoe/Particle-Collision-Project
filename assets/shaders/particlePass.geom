@@ -4,7 +4,6 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 in vec3 vPos[];
-in vec3 vDir[];
 in vec4 vColor[];
 
 out vec4 gColor;

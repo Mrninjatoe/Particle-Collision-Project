@@ -34,18 +34,16 @@ int Engine::run() {
 
 	bool quit = false;
 	bool octreeVisible = false;
-	float timeStep = 1.f;
-	float maxStep = 150.f;
-	double accumulator = 0.f;
+	float timeStep = 1;
+	float maxStep = 300;
+	double accumulator = maxStep;
 	int counter = 0;
-	float dt = 1.0f / 100.f;
+	float dt = 1.0f / 60.f;
 	while (!quit) {
 		LAST = NOW;
 		NOW = SDL_GetPerformanceCounter();
 		
 		deltaTime = ((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency()) * 0.001;
-
-
 
 		while (SDL_PollEvent(&event)) {
 			ImGui_ImplSdlGL3_ProcessEvent(&event);
@@ -122,8 +120,9 @@ int Engine::run() {
 
 		
 		}
+
 		ImGui_ImplSdlGL3_NewFrame(_screen->getView());
-		_camera.update(deltaTime);
+		_camera.update(dt);
 		{ // Geometry pass for information.
 			_geometryPass->useProgram();
 			// Texture.
@@ -172,35 +171,40 @@ int Engine::run() {
 		{ // Deciding on collision particle method.
 			_computeShader->useProgram();
 			switch (_particleSystem->getMethod()) {
-			case ParticleSystem::Octree3DCollision: {
-				_computeShader->setValue(15, _triangleCount);
-				_computeShader->setValue(16, _nrOfNodes);
-				_computeShader->setValue(17, 5);
-				break;
-			}
-			case ParticleSystem::ScreeSpaceParticleCollision: {
-				_computeShader->setValue(8, _camera.getView());
-				_computeShader->setValue(9, _camera.getProj());
-				_computeShader->setValue(10, _camera.getReflectedView());
-				_computeShader->setValue(20, 0);
-				_computeShader->setValue(21, 1);
-				_computeShader->setValue(22, 2);
-				_computeShader->setValue(23, 3);
-				_deferredFBO->bindDepth(0);
-				(*_deferredFBO)[1]->bind(1);
-				_reflectedFBO->bindDepth(2);
-				(*_reflectedFBO)[0]->bind(3);
-				break;
-			}
+				case ParticleSystem::Octree3DCollision: {
+					_computeShader->setValue(15, _triangleCount);
+					_computeShader->setValue(16, _nrOfNodes);
+					_computeShader->setValue(17, 5);
+					break;
+				}
+				case ParticleSystem::ScreeSpaceParticleCollision: {
+					_computeShader->setValue(8, _camera.getView());
+					_computeShader->setValue(9, _camera.getProj());
+					_computeShader->setValue(10, _camera.getReflectedView());
+					_computeShader->setValue(20, 0);
+					_computeShader->setValue(21, 1);
+					_computeShader->setValue(22, 2);
+					_computeShader->setValue(23, 3);
+					_deferredFBO->bindDepth(0);
+					(*_deferredFBO)[1]->bind(1);
+					_reflectedFBO->bindDepth(2);
+					(*_reflectedFBO)[0]->bind(3);
+					break;
+				}
 			}
 		}
 
 		while (accumulator >= dt) {
 			accumulator -= dt;
 			_particleSystem->update(dt, _computeShader);
-			counter++;
 		}
 		accumulator += deltaTime;
+
+		/*while (accumulator >= timeStep && counter <= maxStep) {
+			accumulator -= timeStep;
+			_particleSystem->update(dt, _computeShader);
+			counter++;
+		}*/
 
 		{ // Particle pass.
 			glm::mat4 v = _camera.getView();
@@ -212,7 +216,7 @@ int Engine::run() {
 			_particlePass->setValue(21, forward);
 			//_particlePass->setValue(22, 0);
 			//_testTexture->bind(0);
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 				ssbos[i]->bindBase(i);
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -246,63 +250,63 @@ int Engine::run() {
 			}
 		}
 
-		{
-			//GLint total_mem_kb = 0;
-			//glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX,
-			//	&total_mem_kb);
-			//GLint cur_avail_mem_kb = 0;
-			//glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
-			//	&cur_avail_mem_kb);
-		     
-			GLint dedvram = 0;
-			GLint tavram = 0;
-			GLint cavram = 0;
-			GLint eviccount = 0;
-			GLint evicmem = 0;
-			
-			glGetIntegerv(GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &dedvram);
-			glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &tavram);
-			glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &cavram);
-			glGetIntegerv(GPU_MEMORY_INFO_EVICTION_COUNT_NVX, &eviccount);
-			glGetIntegerv(GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &evicmem);
-			
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			//ImGui::Text("VRAM: %d MB", (total_mem_kb - cur_avail_mem_kb) / 1000);
-			ImGui::Text("Dedicated vram: %d MB", dedvram / 1000);
-			ImGui::Text("Total available vram: %d MB", tavram / 1000);
-			ImGui::Text("Current available vram: %d MB", cavram / 1000);
-			ImGui::Text("Eviction count: %d MB", eviccount);
-			ImGui::Text("Eviction memory: %d MB", evicmem / 1000);
-			//static float f = 0.0f;
-			//static int counter = 0;
-			//ImGui::Text("Hello world!");
-			//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-			//ImGui::ColorEdit3("clear_color", (float*)&clear_color);
-			//
-			//ImGui::Checkbox("Demo window", &show_demo_window);
-			//ImGui::Checkbox("Another window", &show_another_window);
-			//
-			//if (ImGui::Button("Button"))
-			//	counter++;
-			//ImGui::SameLine();
-			//ImGui::Text("counter = %d", counter);
+		//{
+		//	//GLint total_mem_kb = 0;
+		//	//glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX,
+		//	//	&total_mem_kb);
+		//	//GLint cur_avail_mem_kb = 0;
+		//	//glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
+		//	//	&cur_avail_mem_kb);
+		//     
+		//	GLint dedvram = 0;
+		//	GLint tavram = 0;
+		//	GLint cavram = 0;
+		//	GLint eviccount = 0;
+		//	GLint evicmem = 0;
+		//	
+		//	glGetIntegerv(GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &dedvram);
+		//	glGetIntegerv(GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &tavram);
+		//	glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &cavram);
+		//	glGetIntegerv(GPU_MEMORY_INFO_EVICTION_COUNT_NVX, &eviccount);
+		//	glGetIntegerv(GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &evicmem);
+		//	
+		//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		//	//ImGui::Text("VRAM: %d MB", (total_mem_kb - cur_avail_mem_kb) / 1000);
+		//	ImGui::Text("Dedicated vram: %d MB", dedvram / 1000);
+		//	ImGui::Text("Total available vram: %d MB", tavram / 1000);
+		//	ImGui::Text("Current available vram: %d MB", cavram / 1000);
+		//	ImGui::Text("Eviction count: %d MB", eviccount);
+		//	ImGui::Text("Eviction memory: %d MB", evicmem / 1000);
+		//	//static float f = 0.0f;
+		//	//static int counter = 0;
+		//	//ImGui::Text("Hello world!");
+		//	//ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+		//	//ImGui::ColorEdit3("clear_color", (float*)&clear_color);
+		//	//
+		//	//ImGui::Checkbox("Demo window", &show_demo_window);
+		//	//ImGui::Checkbox("Another window", &show_another_window);
+		//	//
+		//	//if (ImGui::Button("Button"))
+		//	//	counter++;
+		//	//ImGui::SameLine();
+		//	//ImGui::Text("counter = %d", counter);
+		//
+		//	
+		//}
 
-			
-		}
 
+		//if (show_another_window) {
+		//	ImGui::Begin("Another window", &show_another_window);
+		//	ImGui::Text("Hello from another window!");
+		//	if (ImGui::Button("Close"))
+		//		show_another_window = false;
+		//	ImGui::End();
+		//}
 
-		if (show_another_window) {
-			ImGui::Begin("Another window", &show_another_window);
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close"))
-				show_another_window = false;
-			ImGui::End();
-		}
-
-		if (show_demo_window) {
-			ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-			ImGui::ShowDemoWindow(&show_demo_window);
-		}
+		//if (show_demo_window) {
+		//	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+		//	ImGui::ShowDemoWindow(&show_demo_window);
+		//}
 
 		//glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
 		//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -320,6 +324,8 @@ int Engine::run() {
 void Engine::_init() {
 	_initializeSDL();
 	_initializeGL();
+	// Choose particle method.
+	_particleMethod = ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision;
 
 	_meshLoader = std::make_unique<MeshLoader>();
 	_textureLoader = std::make_unique<TextureLoader>();
@@ -339,13 +345,20 @@ void Engine::_init() {
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/lightingPass.frag")
 		.finalize();
 
-	/*_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
-		.finalize();*/
-
-	_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
-	_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
-		.finalize();
+	switch (_particleMethod) {
+		case ParticleSystem::ParticleMethod::Octree3DCollision: {
+			_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e Octree");
+			_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesOctreeCollision.comp")
+				.finalize();
+			break;
+		}
+		case ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision: {
+			_computeShader = new ShaderProgram("Compute Shader - Updating Particles w/e SSPC");
+			_computeShader->attachShader(ShaderProgram::ShaderType::ComputeShader, "assets/shaders/particlesUpdate.comp")
+			.finalize();
+			break;
+		}
+	}
 
 	_particlePass = new ShaderProgram("Particle Pass");
 	_particlePass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/particlePass.vert")
@@ -362,6 +375,8 @@ void Engine::_init() {
 	_skyboxPass->attachShader(ShaderProgram::ShaderType::VertexShader, "assets/shaders/skyboxPass.vert")
 		.attachShader(ShaderProgram::ShaderType::FragmentShader, "assets/shaders/skyboxPass.frag")
 		.finalize();
+
+
 
 	_initWorld();
 }
@@ -405,39 +420,46 @@ void Engine::_initWorld() {
 	_models.back().updateModelMatrix(glm::vec3(0, 0, 0), glm::vec3(1.0f));
 
 	_pointLights.push_back(PointLight(glm::vec3(0.25f, 3.0f, 0.25f), glm::vec3(1,1,1)));
-	_camera.position = glm::vec3(3, 1.5f, 3);
+	_camera.position = glm::vec3(0, 1.5f, -4);
 
-	/*glm::vec3 min = {100, 100, 100};
-	glm::vec3 max = {-100, -100, -100};
-	std::vector<Mesh::Triangle> allTriangles;
-	int id = 0;
-	for (auto model : _models) {
-		for (auto mesh : model.meshes) {
-			mesh->setMin(model.model * glm::vec4(mesh->getMin(), 1));
-			mesh->setMax(model.model * glm::vec4(mesh->getMax(), 1));
-			for (int i = 0; i < mesh->getTriangles().size(); i++) {
-				Mesh::Triangle temp = mesh->getTriangles()[i].mul(model.model);
-				temp.id.x = id;
-				allTriangles.push_back(temp);
-				id++;
+
+	switch (_particleMethod) {
+		case ParticleSystem::ParticleMethod::Octree3DCollision: {
+			glm::vec3 min = {100, 100, 100};
+			glm::vec3 max = {-100, -100, -100};
+			std::vector<Mesh::Triangle> allTriangles;
+			int id = 0;
+			for (auto model : _models) {
+				for (auto mesh : model.meshes) {
+					mesh->setMin(model.model * glm::vec4(mesh->getMin(), 1));
+					mesh->setMax(model.model * glm::vec4(mesh->getMax(), 1));
+					for (int i = 0; i < mesh->getTriangles().size(); i++) {
+						Mesh::Triangle temp = mesh->getTriangles()[i].mul(model.model);
+						temp.id.x = id;
+						allTriangles.push_back(temp);
+						id++;
+					}
+				}
+				model.boundingBox.min = model.model * model.boundingBox.min;
+				model.boundingBox.max = model.model * model.boundingBox.max;
+				min = glm::min(min, glm::vec3(model.boundingBox.min));
+				max = glm::max(max, glm::vec3(model.boundingBox.max));
 			}
+			printf("(%f, %f, %f), (%f, %f, %f)\n", min.x, min.y, min.z,
+			max.x, max.y, max.z);
+
+			printf("NUMBER OF MODELS: %zu\n", _models.size());
+			_octree = new Octree(Box(min, max), allTriangles, 0, 0);
+
+			_triangleCount = allTriangles.size();
+			_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);
+			break;
 		}
-		model.boundingBox.min = model.model * model.boundingBox.min;
-		model.boundingBox.max = model.model * model.boundingBox.max;
-		min = glm::min(min, glm::vec3(model.boundingBox.min));
-		max = glm::max(max, glm::vec3(model.boundingBox.max));
+		case ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision: {
+			_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
+			break;
+		}
 	}
-	printf("(%f, %f, %f), (%f, %f, %f)\n", min.x, min.y, min.z,
-	max.x, max.y, max.z);
-
-	printf("NUMBER OF MODELS: %zu\n", _models.size());
-	_octree = new Octree(Box(min, max), allTriangles, 0, 0);
-
-	_triangleCount = allTriangles.size();
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::Octree3DCollision, allTriangles, _octree);*/
-	
-
-	_particleSystem = new ParticleSystem(ParticleSystem::ParticleMethod::ScreeSpaceParticleCollision);
 }
 
 void Engine::_initSkybox() {

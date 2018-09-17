@@ -51,6 +51,8 @@ private:
 	ShaderProgram* _computeShader;
 	ShaderProgram* _octreePass;
 	ShaderProgram* _skyboxPass;
+
+	ParticleSystem::ParticleMethod _particleMethod;
 	Octree* _octree;
 	int _triangleCount = 0;
 	int _nrOfNodes = 0;
